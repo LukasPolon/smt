@@ -8,4 +8,4 @@ class Config:
     TESTING = False
     CSRF_ENABLED = True
     SECRET_KEY = "test"
-    SQLALCHEMY_DATABASE_URI = "postgresql://test:test@localhost/wordcount_dev"
+    SQLALCHEMY_DATABASE_URI = "postgresql://test:test@localhost/test"
