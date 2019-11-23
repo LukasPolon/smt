@@ -1,11 +1,11 @@
 from app import APP
 
-from app.models.server import Server
-from app.models.server_type import ServerType
-from app.models.server_status import ServerStatus
-from app.models.ip import Ip
-from app.models.tag import Tag
-from app.models.admin import Admin
+from app.db.models.server import Server
+
+from app.db.models.server_type import ServerType
+from app.db.models.ip import Ip
+from app.db.models.admin import Admin
+from app.db.models.tag import Tag
 
 
 @APP.route("/")

@@ -1,21 +1,27 @@
 from app import DB
 from werkzeug.exceptions import NotFound
 
-from app.models.server import Server
+from app.db.models.server_admin import server_admin
 
 
-class ServerType(DB.Model):
-    __tablename__ = "server_type"
+class Admin(DB.Model):
+    __tablename__ = "admin"
 
     id = DB.Column(DB.Integer, primary_key=True)
-    name = DB.Column(DB.String(), nullable=False)
-    servers = DB.relationship("Server", backref="server", lazy=True)
+    name = DB.Column(DB.String(), nullable=False, unique=True)
+
+    servers = DB.relationship(
+        "Server",
+        secondary=server_admin,
+        lazy="subquery",
+        backref=DB.backref("admins", lazy=True),
+    )
 
     def __init__(self, name):
         self.name = name
 
     def __repr__(self):
-        return self.name
+        return f"{self.name}"
 
     @classmethod
     def get_by_id(cls, id):

@@ -1,7 +1,7 @@
 from app import DB
 from werkzeug.exceptions import NotFound
 
-from app.models.server_tag import server_tag
+from app.db.models.server_tag import server_tag
 
 
 class Tag(DB.Model):

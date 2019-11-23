@@ -1,7 +1,7 @@
 from app import DB
 from werkzeug.exceptions import NotFound
 
-from app.models.server_ip import server_ip
+from app.db.models.server_ip import server_ip
 
 
 class Ip(DB.Model):
