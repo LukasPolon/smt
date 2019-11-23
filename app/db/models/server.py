@@ -1,21 +1,27 @@
 from app import DB
+
 from werkzeug.exceptions import NotFound
 
-from app.models.server import Server
+from app.db.models.server_status import ServerStatus
+from app.db.models.server_type import ServerType
 
 
-class ServerStatus(DB.Model):
-    __tablename__ = "server_status"
+class Server(DB.Model):
+    __tablename__ = "server"
 
     id = DB.Column(DB.Integer, primary_key=True)
     name = DB.Column(DB.String(), nullable=False)
-    servers = DB.relationship("Server", backref="server", lazy=True)
+    description = DB.Column(DB.String())
+    status_id = DB.Column(DB.Integer, DB.ForeignKey("server_status.id"), nullable=False)
+    type_id = DB.Column(DB.Integer, DB.ForeignKey("server_type.id"), nullable=False)
 
-    def __init__(self, name):
+    def __init__(self, name, type_id, description=str()):
         self.name = name
+        self.type_id = type_id
+        self.description = description
 
     def __repr__(self):
-        return self.name
+        return f"{self.name}"
 
     @classmethod
     def get_by_id(cls, id):
