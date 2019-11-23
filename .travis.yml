@@ -1,0 +1,20 @@
+language: python
+
+env:
+- PS_VERSION=10 PS_USER=test PS_PASSWORD=test PS_DB=test
+
+services:
+  - docker
+
+before_install:
+- docker build -t smt:latest .
+- docker run -dt --network host --name smt smt:latest
+- docker run -d -p 5432:5432 -e POSTGRES_USER=${PS_USER} -e POSTGRES_PASSWORD=${PS_PASSWORD} -e POSTGRES_DB=${PS_DB} --name postgres postgres:${PS_VERSION}
+- docker ps
+
+install:
+  - docker exec -it smt flask db init
+
+script:
+  - docker exec -it smt flask db migrate
+  - docker exec -it smt flask db upgrade
