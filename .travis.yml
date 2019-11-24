@@ -20,3 +20,4 @@ script:
   - docker exec -it smt flask db upgrade
   - docker exec -it smt coverage run -m unittest
   - docker exec -it smt coverage report
+  - docker exec -it smt pytest -m "db_operations"
