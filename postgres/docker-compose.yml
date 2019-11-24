@@ -6,10 +6,20 @@ services:
     environment:
     - POSTGRES_USER=test
     - POSTGRES_PASSWORD=test
-    - POSTGRES_DB=test_db
+    - POSTGRES_DB=test
     ports:
     - "5432:5432"
     volumes:
     - /home/lpolon/postgres/data:/var/lib/postgresql/data:Z
     restart: always
+  pgadmin:
+    image: "docker.io/dpage/pgadmin4:4"
+    container_name: "pgadmin4"
+    environment:
+    - PGADMIN_DEFAULT_EMAIL=test@test.com
+    - PGADMIN_DEFAULT_PASSWORD=test
+    ports:
+    - "80:80"
+    restart: always
+
 
