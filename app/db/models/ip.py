@@ -1,10 +1,11 @@
 from app import DB
-from werkzeug.exceptions import NotFound
 
 from app.db.models.server_ip import server_ip
 
 
 class Ip(DB.Model):
+    """ Ip table model """
+
     __tablename__ = "ip"
 
     id = DB.Column(DB.Integer, primary_key=True)
@@ -18,21 +19,9 @@ class Ip(DB.Model):
     )
 
     def __init__(self, address):
+        """ Constructor for Ip model."""
         self.address = address
 
     def __repr__(self):
+        """ String representation of Ip model object."""
         return self.address
-
-    @classmethod
-    def get_by_id(cls, id):
-        return cls.query.filter_by(id=id).first_or_404(
-            description=f"[SQL][{cls.__tablename__}] Not found ID: {id}."
-        )
-
-    @classmethod
-    def get_by_address(cls, address):
-        result = cls.query.filter_by(address=address).all()
-        if not len(result):
-            raise NotFound(
-                description=f"[SQL][{cls.__tablename__}] Not found Address: {address}"
-            )

@@ -41,7 +41,7 @@ class TestOpAdmin(TestCase):
         """ Assumptions:
                 - given name have 21 length
         """
-        long_name = "T"*21
+        long_name = "T" * 21
 
         with self.assertRaisesRegex(ValueError, "wrong length"):
             AdminOp.validate_name(long_name)
@@ -69,7 +69,7 @@ class TestOpAdmin(TestCase):
         """ Assumptions:
                 - given name met requirements
         """
-        good_name = 'Good Name'
+        good_name = "Good Name"
         try:
             AdminOp.validate_name(good_name)
         except ValueError:
@@ -90,10 +90,7 @@ class TestOpAdmin(TestCase):
 
         self.assertTrue(mock_admin.query.filter_by.called)
 
-        exp_calls = [
-            mock.call(id=test_id),
-            mock.call().all()
-        ]
+        exp_calls = [mock.call(id=test_id), mock.call().all()]
         mock_admin.query.filter_by.assert_has_calls(exp_calls)
 
     @mock.patch(f"{OP_PATH}.basic.admin.AdminOp.validate_name")
@@ -103,7 +100,7 @@ class TestOpAdmin(TestCase):
         """ Assumptions:
                 - name argument given
         """
-        test_name = 'test_name'
+        test_name = "test_name"
         AdminOp.get(name=test_name)
 
         self.assertFalse(mock_val_id.called)
@@ -111,10 +108,7 @@ class TestOpAdmin(TestCase):
 
         self.assertTrue(mock_admin.query.filter_by.called)
 
-        exp_calls = [
-            mock.call(name=test_name),
-            mock.call().all()
-        ]
+        exp_calls = [mock.call(name=test_name), mock.call().all()]
         mock_admin.query.filter_by.assert_has_calls(exp_calls)
 
     @mock.patch(f"{OP_PATH}.basic.admin.AdminOp.validate_name")
@@ -125,7 +119,7 @@ class TestOpAdmin(TestCase):
                 - id argument given
                 - name argument given
         """
-        test_name = 'test_name'
+        test_name = "test_name"
         test_id = 1
         AdminOp.get(id=test_id, name=test_name)
 
@@ -134,10 +128,7 @@ class TestOpAdmin(TestCase):
 
         self.assertTrue(mock_admin.query.filter_by.called)
 
-        exp_calls = [
-            mock.call(id=test_id, name=test_name),
-            mock.call().all()
-        ]
+        exp_calls = [mock.call(id=test_id, name=test_name), mock.call().all()]
         mock_admin.query.filter_by.assert_has_calls(exp_calls)
 
     @mock.patch(f"{OP_PATH}.basic.admin.DB")
@@ -150,9 +141,7 @@ class TestOpAdmin(TestCase):
         new_name = "Test Name"
         new_admin = AdminOp.add(new_name)
 
-        exp_calls = [
-            mock.call(new_name)
-        ]
+        exp_calls = [mock.call(new_name)]
         mock_admin.assert_has_calls(exp_calls)
 
         self.assertEqual(new_admin, mock_admin())
@@ -161,7 +150,7 @@ class TestOpAdmin(TestCase):
 
         db_exp_calls = [
             mock.call.session.add(new_admin),
-            mock.call.session.commit()
+            mock.call.session.commit(),
         ]
 
         mock_db.assert_has_calls(db_exp_calls)
@@ -182,7 +171,7 @@ class TestOpAdmin(TestCase):
 
         db_exp_calls = [
             mock.call.session.add(updated_admin),
-            mock.call.session.commit()
+            mock.call.session.commit(),
         ]
 
         mock_db.assert_has_calls(db_exp_calls)
@@ -199,7 +188,7 @@ class TestOpAdmin(TestCase):
 
         db_exp_calls = [
             mock.call.session.delete(admin_obj),
-            mock.call.session.commit()
+            mock.call.session.commit(),
         ]
 
         mock_db.assert_has_calls(db_exp_calls)

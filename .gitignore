@@ -108,3 +108,6 @@ postgres/.postgres_data/
 
 # Pycharm
 .idea/
+
+# Flask migrations
+migrations/

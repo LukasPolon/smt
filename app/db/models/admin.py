@@ -5,6 +5,7 @@ from app.db.models.server_admin import server_admin
 
 class Admin(DB.Model):
     """ Admin table model """
+
     __tablename__ = "admin"
 
     id = DB.Column(DB.Integer, primary_key=True)

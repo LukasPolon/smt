@@ -17,11 +17,7 @@ class TestAdminOp(Asserts):
 
     def case_add_records(self, refresh_db_before):
         """ Add new records to Admin table."""
-        new_names = [
-            'admin1',
-            'admin2',
-            'admin3'
-        ]
+        new_names = ["admin1", "admin2", "admin3"]
 
         for name in new_names:
             AdminOp.add(name)
@@ -36,11 +32,7 @@ class TestAdminOp(Asserts):
 
     def case_get_by_id(self, refresh_db_before):
         """ Create test records in Admin table and get them by id."""
-        names_with_id = {
-            'admin1': 1,
-            'admin2': 2,
-            'admin3': 3
-        }
+        names_with_id = {"admin1": 1, "admin2": 2, "admin3": 3}
 
         for name in names_with_id.keys():
             AdminOp.add(name)
@@ -53,11 +45,7 @@ class TestAdminOp(Asserts):
 
     def case_get_by_name_one_result(self, refresh_db_before):
         """ Create test records in Admin table and get them by name."""
-        names_with_id = {
-            'admin1': 1,
-            'admin2': 2,
-            'admin3': 3
-        }
+        names_with_id = {"admin1": 1, "admin2": 2, "admin3": 3}
 
         for name in names_with_id.keys():
             AdminOp.add(name)
@@ -70,8 +58,8 @@ class TestAdminOp(Asserts):
 
     def case_update_record(self, refresh_db_before):
         """ Create test record in Admin table and then update it."""
-        original_name = 'admin3'
-        update_name = 'admin33'
+        original_name = "admin3"
+        update_name = "admin33"
 
         original_admin = AdminOp.add(original_name)
 
@@ -87,7 +75,7 @@ class TestAdminOp(Asserts):
 
     def case_delete_records(self, refresh_db_before):
         """ Create new record in Admin table and then delete it."""
-        new_name = 'admin1'
+        new_name = "admin1"
 
         AdminOp.add(new_name)
 
