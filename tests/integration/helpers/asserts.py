@@ -1,5 +1,3 @@
-
-
 class Asserts:
     """ I don't like Python native assert keyword, so this class mimics
         asserts from unittest library.
