@@ -138,7 +138,6 @@ class TestOpIp(TestCase):
         mock_ip.assert_has_calls(exp_calls)
 
         self.assertEqual(new_ip, mock_ip())
-
         self.assertTrue(mock_val_address.called)
 
         db_exp_calls = [
