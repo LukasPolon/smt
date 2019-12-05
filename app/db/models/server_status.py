@@ -14,17 +14,3 @@ class ServerStatus(DB.Model):
 
     def __repr__(self):
         return self.name
-
-    @classmethod
-    def get_by_id(cls, id):
-        return cls.query.filter_by(id=id).first_or_404(
-            description=f"[SQL][{cls.__tablename__}] Not found ID: {id}."
-        )
-
-    @classmethod
-    def get_by_name(cls, name):
-        result = cls.query.filter_by(name=name).all()
-        if not len(result):
-            raise NotFound(
-                description=f"[SQL][{cls.__tablename__}] Not found Name: {name}"
-            )
