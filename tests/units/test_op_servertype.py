@@ -1,14 +1,13 @@
 from unittest import TestCase
 from unittest import mock
 
-from app.db.operations.basic.server_status import ServerStatusOp
+from app.db.operations.basic.server_type import ServerTypeOp
+
+OP_PATH = "app.db.operations.basic.server_type"
 
 
-OP_PATH = "app.db.operations.basic.server_status"
-
-
-class TestServerStatusOp(TestCase):
-    """ Unit tests for ServerStatusOp class."""
+class TestServerTypeOp(TestCase):
+    """ Unit tests for ServerTypeOp class."""
 
     def test_validate_id_positive(self):
         """ Assumptions:
@@ -16,7 +15,7 @@ class TestServerStatusOp(TestCase):
         """
         positive_id = 1
         try:
-            ServerStatusOp.validate_id(positive_id)
+            ServerTypeOp.validate_id(positive_id)
         except ValueError:
             self.fail("ValueError raised.")
 
@@ -26,7 +25,7 @@ class TestServerStatusOp(TestCase):
         """
         negative_id = "1"
         with self.assertRaisesRegex(ValueError, "must be Integer"):
-            ServerStatusOp.validate_id(negative_id)
+            ServerTypeOp.validate_id(negative_id)
 
     def test_validate_name_not_string(self):
         """ Assumptions:
@@ -34,7 +33,7 @@ class TestServerStatusOp(TestCase):
         """
         name = 1111
         with self.assertRaisesRegex(ValueError, "must be String"):
-            ServerStatusOp.validate_name(name)
+            ServerTypeOp.validate_name(name)
 
     def test_validate_name_too_short(self):
         """ Assumptions:
@@ -42,7 +41,7 @@ class TestServerStatusOp(TestCase):
         """
         name = ""
         with self.assertRaisesRegex(ValueError, "have wrong length"):
-            ServerStatusOp.validate_name(name)
+            ServerTypeOp.validate_name(name)
 
     def test_validate_name_too_long(self):
         """ Assumptions:
@@ -50,7 +49,7 @@ class TestServerStatusOp(TestCase):
         """
         name = "A" * 21
         with self.assertRaisesRegex(ValueError, "have wrong length"):
-            ServerStatusOp.validate_name(name)
+            ServerTypeOp.validate_name(name)
 
     def test_validate_name_good_length(self):
         """ Assumptions:
@@ -59,7 +58,7 @@ class TestServerStatusOp(TestCase):
         names = ["A", "A" * 20]
         for name in names:
             try:
-                ServerStatusOp.validate_name(name)
+                ServerTypeOp.validate_name(name)
             except ValueError:
                 self.fail("ValueError raised.")
 
@@ -67,19 +66,19 @@ class TestServerStatusOp(TestCase):
         """ Assumptions:
                 - given name does not match respective regex
         """
-        wrong_names = ["A1", "Aa+", "A-", "A!@#$%^&"]
+        wrong_names = ["A1", "Aa+", "A-", "A!@#$%^&_"]
         for wrong_name in wrong_names:
             with self.assertRaisesRegex(ValueError, "does not match regex"):
-                ServerStatusOp.validate_name(wrong_name)
+                ServerTypeOp.validate_name(wrong_name)
 
     def test_validate_name_correct_regex(self):
         """ Assumptions:
                 - given correct name match regex.
         """
-        good_names = ["Test", "Test_two"]
+        good_names = ["Test", "Test two"]
         for good_name in good_names:
             try:
-                ServerStatusOp.validate_name(good_name)
+                ServerTypeOp.validate_name(good_name)
             except ValueError:
                 self.fail("ValueError raised.")
 
@@ -89,7 +88,7 @@ class TestServerStatusOp(TestCase):
         """
         name = "test"
         with self.assertRaisesRegex(ValueError, "must start with capital"):
-            ServerStatusOp.validate_name(name)
+            ServerTypeOp.validate_name(name)
 
     def test_validate_name_capital(self):
         """ Assumption:
@@ -97,80 +96,80 @@ class TestServerStatusOp(TestCase):
         """
         name = "Test"
         try:
-            ServerStatusOp.validate_name(name)
+            ServerTypeOp.validate_name(name)
         except ValueError:
             self.fail("Value error raised.")
 
-    @mock.patch(f"{OP_PATH}.ServerStatusOp.validate_name")
-    @mock.patch(f"{OP_PATH}.ServerStatusOp.validate_id")
-    @mock.patch(f"{OP_PATH}.ServerStatus")
-    def test_get_id(self, mock_servstatus, mock_val_id, mock_val_name):
+    @mock.patch(f"{OP_PATH}.ServerTypeOp.validate_name")
+    @mock.patch(f"{OP_PATH}.ServerTypeOp.validate_id")
+    @mock.patch(f"{OP_PATH}.ServerType")
+    def test_get_id(self, mock_servtype, mock_val_id, mock_val_name):
         """ Assumptions:
                 - id argument given
         """
         test_id = 1
-        ServerStatusOp.get(id=test_id)
+        ServerTypeOp.get(id=test_id)
 
         self.assertTrue(mock_val_id.called)
         self.assertFalse(mock_val_name.called)
 
-        self.assertTrue(mock_servstatus.query.filter_by.called)
+        self.assertTrue(mock_servtype.query.filter_by.called)
 
         exp_calls = [mock.call(id=test_id), mock.call().all()]
-        mock_servstatus.query.filter_by.assert_has_calls(exp_calls)
+        mock_servtype.query.filter_by.assert_has_calls(exp_calls)
 
-    @mock.patch(f"{OP_PATH}.ServerStatusOp.validate_name")
-    @mock.patch(f"{OP_PATH}.ServerStatusOp.validate_id")
-    @mock.patch(f"{OP_PATH}.ServerStatus")
-    def test_get_name(self, mock_servstatus, mock_val_id, mock_val_name):
+    @mock.patch(f"{OP_PATH}.ServerTypeOp.validate_name")
+    @mock.patch(f"{OP_PATH}.ServerTypeOp.validate_id")
+    @mock.patch(f"{OP_PATH}.ServerType")
+    def test_get_name(self, mock_servtype, mock_val_id, mock_val_name):
         """ Assumptions:
                 - name argument given
         """
         test_name = "test_name"
-        ServerStatusOp.get(name=test_name)
+        ServerTypeOp.get(name=test_name)
 
         self.assertFalse(mock_val_id.called)
         self.assertTrue(mock_val_name.called)
 
-        self.assertTrue(mock_servstatus.query.filter_by.called)
+        self.assertTrue(mock_servtype.query.filter_by.called)
 
         exp_calls = [mock.call(name=test_name), mock.call().all()]
-        mock_servstatus.query.filter_by.assert_has_calls(exp_calls)
+        mock_servtype.query.filter_by.assert_has_calls(exp_calls)
 
-    @mock.patch(f"{OP_PATH}.ServerStatusOp.validate_name")
-    @mock.patch(f"{OP_PATH}.ServerStatusOp.validate_id")
-    @mock.patch(f"{OP_PATH}.ServerStatus")
-    def test_get_all_args(self, mock_servstatus, mock_val_id, mock_val_name):
+    @mock.patch(f"{OP_PATH}.ServerTypeOp.validate_name")
+    @mock.patch(f"{OP_PATH}.ServerTypeOp.validate_id")
+    @mock.patch(f"{OP_PATH}.ServerType")
+    def test_get_all_args(self, mock_servtype, mock_val_id, mock_val_name):
         """ Assumptions:
                 - id argument given
                 - name argument given
         """
         test_name = "test_name"
         test_id = 1
-        ServerStatusOp.get(id=test_id, name=test_name)
+        ServerTypeOp.get(id=test_id, name=test_name)
 
         self.assertTrue(mock_val_id.called)
         self.assertTrue(mock_val_name.called)
 
-        self.assertTrue(mock_servstatus.query.filter_by.called)
+        self.assertTrue(mock_servtype.query.filter_by.called)
 
         exp_calls = [mock.call(id=test_id, name=test_name), mock.call().all()]
-        mock_servstatus.query.filter_by.assert_has_calls(exp_calls)
+        mock_servtype.query.filter_by.assert_has_calls(exp_calls)
 
     @mock.patch(f"{OP_PATH}.DB")
-    @mock.patch(f"{OP_PATH}.ServerStatusOp.validate_name")
-    @mock.patch(f"{OP_PATH}.ServerStatus")
-    def test_add(self, mock_servstatus, mock_val_name, mock_db):
+    @mock.patch(f"{OP_PATH}.ServerTypeOp.validate_name")
+    @mock.patch(f"{OP_PATH}.ServerType")
+    def test_add(self, mock_servtype, mock_val_name, mock_db):
         """ Assumptions:
                 - add method run
         """
         new_name = "TestName"
-        new_ip = ServerStatusOp.add(new_name)
+        new_ip = ServerTypeOp.add(new_name)
 
         exp_calls = [mock.call(new_name)]
-        mock_servstatus.assert_has_calls(exp_calls)
+        mock_servtype.assert_has_calls(exp_calls)
 
-        self.assertEqual(new_ip, mock_servstatus())
+        self.assertEqual(new_ip, mock_servtype())
         self.assertTrue(mock_val_name.called)
 
         db_exp_calls = [mock.call.session.add(new_ip), mock.call.session.commit()]
@@ -178,16 +177,16 @@ class TestServerStatusOp(TestCase):
         mock_db.assert_has_calls(db_exp_calls)
 
     @mock.patch(f"{OP_PATH}.DB")
-    @mock.patch(f"{OP_PATH}.ServerStatusOp.validate_name")
-    @mock.patch(f"{OP_PATH}.ServerStatus")
-    def test_update(self, mock_servstatus, mock_val_name, mock_db):
+    @mock.patch(f"{OP_PATH}.ServerTypeOp.validate_name")
+    @mock.patch(f"{OP_PATH}.ServerType")
+    def test_update(self, mock_servtype, mock_val_name, mock_db):
         """ Assumptions:
                 - update method run
         """
         new_name = "TestName"
-        ip_obj = mock_servstatus()
+        ip_obj = mock_servtype()
 
-        updated_ip = ServerStatusOp.update(ip_obj, new_name)
+        updated_ip = ServerTypeOp.update(ip_obj, new_name)
 
         self.assertTrue(mock_val_name.called)
 
@@ -196,14 +195,14 @@ class TestServerStatusOp(TestCase):
         mock_db.assert_has_calls(db_exp_calls)
 
     @mock.patch(f"{OP_PATH}.DB")
-    @mock.patch(f"{OP_PATH}.ServerStatus")
-    def test_delete(self, mock_servstatus, mock_db):
+    @mock.patch(f"{OP_PATH}.ServerType")
+    def test_delete(self, mock_servtype, mock_db):
         """ Assumptions:
                 - delete method run
         """
-        ip_obj = mock_servstatus()
+        ip_obj = mock_servtype()
 
-        ServerStatusOp.delete(ip_obj)
+        ServerTypeOp.delete(ip_obj)
 
         db_exp_calls = [mock.call.session.delete(ip_obj), mock.call.session.commit()]
 

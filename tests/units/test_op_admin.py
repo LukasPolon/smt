@@ -148,10 +148,7 @@ class TestOpAdmin(TestCase):
 
         self.assertTrue(mock_val_name.called)
 
-        db_exp_calls = [
-            mock.call.session.add(new_admin),
-            mock.call.session.commit(),
-        ]
+        db_exp_calls = [mock.call.session.add(new_admin), mock.call.session.commit()]
 
         mock_db.assert_has_calls(db_exp_calls)
 
@@ -186,9 +183,6 @@ class TestOpAdmin(TestCase):
 
         AdminOp.delete(admin_obj)
 
-        db_exp_calls = [
-            mock.call.session.delete(admin_obj),
-            mock.call.session.commit(),
-        ]
+        db_exp_calls = [mock.call.session.delete(admin_obj), mock.call.session.commit()]
 
         mock_db.assert_has_calls(db_exp_calls)

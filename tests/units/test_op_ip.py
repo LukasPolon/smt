@@ -118,10 +118,7 @@ class TestOpIp(TestCase):
 
         self.assertTrue(mock_ip.query.filter_by.called)
 
-        exp_calls = [
-            mock.call(id=test_id, address=test_address),
-            mock.call().all(),
-        ]
+        exp_calls = [mock.call(id=test_id, address=test_address), mock.call().all()]
         mock_ip.query.filter_by.assert_has_calls(exp_calls)
 
     @mock.patch(f"{OP_PATH}.basic.ip.DB")
@@ -140,10 +137,7 @@ class TestOpIp(TestCase):
         self.assertEqual(new_ip, mock_ip())
         self.assertTrue(mock_val_address.called)
 
-        db_exp_calls = [
-            mock.call.session.add(new_ip),
-            mock.call.session.commit(),
-        ]
+        db_exp_calls = [mock.call.session.add(new_ip), mock.call.session.commit()]
 
         mock_db.assert_has_calls(db_exp_calls)
 
@@ -161,10 +155,7 @@ class TestOpIp(TestCase):
 
         self.assertTrue(mock_val_address.called)
 
-        db_exp_calls = [
-            mock.call.session.add(updated_ip),
-            mock.call.session.commit(),
-        ]
+        db_exp_calls = [mock.call.session.add(updated_ip), mock.call.session.commit()]
 
         mock_db.assert_has_calls(db_exp_calls)
 
@@ -178,9 +169,6 @@ class TestOpIp(TestCase):
 
         IpOp.delete(ip_obj)
 
-        db_exp_calls = [
-            mock.call.session.delete(ip_obj),
-            mock.call.session.commit(),
-        ]
+        db_exp_calls = [mock.call.session.delete(ip_obj), mock.call.session.commit()]
 
         mock_db.assert_has_calls(db_exp_calls)

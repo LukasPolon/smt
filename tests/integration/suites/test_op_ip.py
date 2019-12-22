@@ -33,11 +33,7 @@ class TestIpOp(Asserts):
 
     def case_get_by_id(self, refresh_db_before):
         """ Create test records in Ip table and get them by id."""
-        addresses_with_id = {
-            "0.0.0.0": 1,
-            "11.11.11.11": 2,
-            "222.222.222.222": 3,
-        }
+        addresses_with_id = {"0.0.0.0": 1, "11.11.11.11": 2, "222.222.222.222": 3}
 
         for address in addresses_with_id.keys():
             IpOp.add(address)
@@ -50,11 +46,7 @@ class TestIpOp(Asserts):
 
     def case_get_by_address_one_result(self, refresh_db_before):
         """ Create test records in Ip table and get them by name."""
-        addresses_with_id = {
-            "0.0.0.0": 1,
-            "11.11.11.11": 2,
-            "222.222.222.222": 3,
-        }
+        addresses_with_id = {"0.0.0.0": 1, "11.11.11.11": 2, "222.222.222.222": 3}
 
         for address in addresses_with_id.keys():
             IpOp.add(address)
