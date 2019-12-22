@@ -15,24 +15,12 @@ class Server(DB.Model):
     status_id = DB.Column(DB.Integer, DB.ForeignKey("server_status.id"), nullable=False)
     type_id = DB.Column(DB.Integer, DB.ForeignKey("server_type.id"), nullable=False)
 
-    def __init__(self, name, type_id, description=str()):
+    def __init__(self, name, type_id, status_id, description):
         self.name = name
         self.type_id = type_id
-        self.description = description
+        self.status_id = status_id
+        if description:
+            self.description = description
 
     def __repr__(self):
         return f"{self.name}"
-
-    @classmethod
-    def get_by_id(cls, id):
-        return cls.query.filter_by(id=id).first_or_404(
-            description=f"[SQL][{cls.__tablename__}] Not found ID: {id}."
-        )
-
-    @classmethod
-    def get_by_name(cls, name):
-        result = cls.query.filter_by(name=name).all()
-        if not len(result):
-            raise NotFound(
-                description=f"[SQL][{cls.__tablename__}] Not found Name: {name}"
-            )

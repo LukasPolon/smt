@@ -1,3 +1,7 @@
+0.0.3 (22/12/2019)
+------------------
+* Added server and server_type models operations with tests
+
 0.0.2 (05/12/2019)
 ------------------
 * Added models operations for ServerStatus

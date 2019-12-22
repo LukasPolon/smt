@@ -1,8 +1,12 @@
+all: black-check unit-tests integration-tests
+
 black-check:
-	black --check --diff --exclude migrations .
+	black --check --diff app/
+	black --check --diff tests/
 
 black-lint:
-	black --exclude migrations .
+	black app/
+	black tests/
 
 unit-tests:
 	coverage run -m unittest

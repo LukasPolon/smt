@@ -44,7 +44,7 @@ class TestServerStatusOp(Asserts):
             self.assertEqual(exp_id, stat_obj[0].id)
 
     def case_get_by_name_one_result(self, refresh_db_before):
-        """ Create test records in Ip table and get them by name."""
+        """ Create test records in ServerStatus table and get them by name."""
         statuses_with_id = {"Status_one": 1, "Status_two": 2}
 
         for status in statuses_with_id.keys():
