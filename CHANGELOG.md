@@ -1,3 +1,7 @@
+0.0.4 (23/12/2019)
+------------------
+* Added tag model operations with tests
+
 0.0.3 (22/12/2019)
 ------------------
 * Added server and server_type models operations with tests

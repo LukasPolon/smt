@@ -17,16 +17,10 @@ class Tag(DB.Model):
         backref=DB.backref("tags", lazy=True),
     )
 
-    @classmethod
-    def get_by_id(cls, id):
-        return cls.query.filter_by(id=id).first_or_404(
-            description=f"[SQL][{cls.__tablename__}] Not found ID: {id}."
-        )
+    def __init__(self, name):
+        """ Constructor for Tag model."""
+        self.name = name
 
-    @classmethod
-    def get_by_name(cls, name):
-        result = cls.query.filter_by(name=name).all()
-        if not len(result):
-            raise NotFound(
-                description=f"[SQL][{cls.__tablename__}] Not found Name: {name}"
-            )
+    def __repr__(self):
+        """ String representation of Tag model object."""
+        return f"{self.name}"
