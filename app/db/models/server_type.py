@@ -1,5 +1,4 @@
 from app import DB
-from werkzeug.exceptions import NotFound
 
 
 class ServerType(DB.Model):

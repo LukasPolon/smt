@@ -5,6 +5,10 @@ from tests.integration.helpers.fixtures import refresh_db_before
 
 from app import run
 from app.db.models.server import Server
+from app.db.models.ip import Ip
+from app.db.operations.basic.ip import IpOp
+from app.db.operations.basic.tag import TagOp
+from app.db.operations.basic.admin import AdminOp
 from app.db.operations.basic.server import ServerOp
 from app.db.operations.basic.server_type import ServerTypeOp
 from app.db.operations.basic.server_status import ServerStatusOp
@@ -57,6 +61,66 @@ class TestServerOp(Asserts):
 
         self.assertTrue(exception_raised)
 
+    def case_resolve_ip_positive(self, refresh_db_before):
+        """ Try to resolve Ip row."""
+        ips = ["11.11.11.11", "22.22.22.22", "33.33.33.33"]
+        for ip in ips:
+            IpOp.add(address=ip)
+
+        for id, ip in enumerate(ips):
+            ip_obj = ServerOp.resolve_ip(ip)
+            self.assertEqual(ip_obj.id, id + 1)
+            self.assertEqual(ip_obj.address, ip)
+            self.assertTrue(isinstance(ip_obj, Ip))
+
+    def case_resolve_ip_not_found(self, refresh_db_before):
+        """ Try to resolve Ip row which does not exists."""
+        exception_raised = False
+        try:
+            ServerOp.resolve_ip("11.11.11.11")
+        except ValueError:
+            exception_raised = True
+
+        self.assertTrue(exception_raised)
+
+    def case_resolve_tag_positive(self, refresh_db_before):
+        """ Try to resolve existing Tag name."""
+        tag_name = "new tag"
+        tag_obj = TagOp.add(tag_name)
+
+        tag_res_obj = ServerOp.resolve_tag(tag_name)
+        self.assertEqual(tag_obj, tag_res_obj)
+        self.assertEqual(tag_res_obj.name, tag_name)
+
+    def case_resolve_tag_not_found(self, refresh_db_before):
+        """ Try to resolve non-existing tag name."""
+        exception_raised = False
+        try:
+            ServerOp.resolve_tag("not-existing tag")
+        except ValueError:
+            exception_raised = True
+
+        self.assertTrue(exception_raised)
+
+    def case_resolve_admin_positive(self, refresh_db_before):
+        """ Try to resolve existing Admin name."""
+        adm_name = "New Admin"
+        adm_obj = AdminOp.add(adm_name)
+
+        adm_res_obj = ServerOp.resolve_admin(adm_name)
+        self.assertEqual(adm_obj, adm_res_obj)
+        self.assertEqual(adm_res_obj.name, adm_name)
+
+    def case_resolve_admin_not_found(self, refresh_db_before):
+        """ Try to resolve non-existing admin name."""
+        exception_raised = False
+        try:
+            ServerOp.resolve_admin("Adm")
+        except ValueError:
+            exception_raised = True
+
+        self.assertTrue(exception_raised)
+
     def case_add_with_description(self, refresh_db_before):
         """ Create new Server row with a description field."""
         description = "Some description made. - : *"
@@ -95,6 +159,80 @@ class TestServerOp(Asserts):
         self.assertEqual(get_servers[0].name, server_name)
 
         self.assertEqual(get_servers[0], new_server)
+
+    def case_add_with_ips(self, refresh_db_before):
+        """ Create new Server row with ips many-to-many relation."""
+        server_name = "TestServer"
+        server_status = "TestStatus"
+        server_type = "TestType"
+        ips = ["11.11.11.11", "22.22.22.22", "33.33.33.33"]
+
+        ServerStatusOp.add(server_status)
+        ServerTypeOp.add(server_type)
+        for ip in ips:
+            IpOp.add(ip)
+
+        new_server = ServerOp.add(server_name, server_status, server_type, ips=ips)
+
+        get_servers = ServerOp.get()
+        self.assertTrue(len(get_servers) is 1)
+        self.assertEqual(get_servers[0].description, None)
+        self.assertEqual(get_servers[0].id, 1)
+        self.assertEqual(get_servers[0].name, server_name)
+        self.assertEqual(get_servers[0], new_server)
+
+        for srv_ip, exp_ip in zip(get_servers[0].ips, ips):
+            self.assertEqual(srv_ip.address, exp_ip)
+
+    def case_add_with_tags(self, refresh_db_before):
+        """ Create new Server row with tags many-to-many relation."""
+        server_name = "TestServer"
+        server_status = "TestStatus"
+        server_type = "TestType"
+        tags = ["tag one", "tag two", "tag three"]
+
+        ServerStatusOp.add(server_status)
+        ServerTypeOp.add(server_type)
+        for tag in tags:
+            TagOp.add(tag)
+
+        new_server = ServerOp.add(server_name, server_status, server_type, tags=tags)
+
+        get_servers = ServerOp.get()
+        self.assertTrue(len(get_servers) is 1)
+        self.assertEqual(get_servers[0].description, None)
+        self.assertEqual(get_servers[0].id, 1)
+        self.assertEqual(get_servers[0].name, server_name)
+        self.assertEqual(get_servers[0], new_server)
+
+        for tag, exp_name in zip(get_servers[0].tags, tags):
+            self.assertEqual(tag.name, exp_name)
+
+    def case_add_with_admins(self, refresh_db_before):
+        """ Create new Server row with admins many-to-many relation."""
+        server_name = "TestServer"
+        server_status = "TestStatus"
+        server_type = "TestType"
+        admins = ["Admin One", "Admin Two"]
+
+        ServerStatusOp.add(server_status)
+        ServerTypeOp.add(server_type)
+        for admin in admins:
+            AdminOp.add(admin)
+
+        new_server = ServerOp.add(
+            server_name, server_status, server_type, admins=admins
+        )
+
+        get_servers = ServerOp.get()
+        self.assertTrue(len(get_servers) is 1)
+        self.assertEqual(get_servers[0].description, None)
+        self.assertEqual(get_servers[0].id, 1)
+        self.assertEqual(get_servers[0].name, server_name)
+        self.assertEqual(get_servers[0], new_server)
+
+        for admin, exp_name in zip(get_servers[0].admins, admins):
+            self.assertEqual(admin.name, exp_name)
 
     def case_get_by_id(self, refresh_db_before):
         """ Get server row with id keyword."""
@@ -170,6 +308,87 @@ class TestServerOp(Asserts):
         self.assertEqual(get_first_type[0], srv_one)
         self.assertNotEqual(get_first_type[0], srv_two)
 
+    def case_get_by_ip(self, refresh_db_before):
+        """ Get server row with ip keyword."""
+        server_name = "TestServer"
+        server_second_name = "TestServerTwo"
+        server_status = "TestStatus"
+        server_type = "TestType"
+        ServerStatusOp.add(server_status)
+        ServerTypeOp.add(server_type)
+
+        ips = ["11.11.11.11", "22.22.22.22"]
+        for ip in ips:
+            IpOp.add(ip)
+
+        srv_one = ServerOp.add(server_name, server_status, server_type, ips=[ips[0]])
+        srv_two = ServerOp.add(
+            server_second_name, server_status, server_type, ips=[ips[1]]
+        )
+
+        get_first_ip = ServerOp.get(ip=ips[0])
+        self.assertTrue(len(get_first_ip) is 1)
+        self.assertEqual(get_first_ip[0], srv_one)
+        self.assertNotEqual(get_first_ip[0], srv_two)
+        self.assertTrue(len(get_first_ip[0].ips) is 1)
+        self.assertEqual(get_first_ip[0].ips[0].address, ips[0])
+
+    def case_get_by_tags(self, refresh_db_before):
+        """ Get server row with tags keyword."""
+        server_name = "TestServer"
+        server_second_name = "TestServerTwo"
+        server_status = "TestStatus"
+        server_type = "TestType"
+        ServerStatusOp.add(server_status)
+        ServerTypeOp.add(server_type)
+
+        tags = ["tag one", "tag two", "tag three"]
+        for tag in tags:
+            TagOp.add(tag)
+
+        srv_one = ServerOp.add(
+            server_name, server_status, server_type, tags=[tags[0], tags[1]]
+        )
+        srv_two = ServerOp.add(
+            server_second_name, server_status, server_type, tags=tags
+        )
+
+        get_lonely = ServerOp.get(tags=[tags[2]])
+        self.assertTrue(len(get_lonely) is 1)
+        self.assertEqual(get_lonely[0], srv_two)
+        self.assertEqual(len(get_lonely[0].tags), len(tags))
+
+        get_all = ServerOp.get(tags=[tags[0]])
+        self.assertTrue(len(get_all) is 2)
+
+    def case_get_by_admins(self, refresh_db_before):
+        """ Get server row with admins keyword."""
+        server_name = "TestServer"
+        server_second_name = "TestServerTwo"
+        server_status = "TestStatus"
+        server_type = "TestType"
+        ServerStatusOp.add(server_status)
+        ServerTypeOp.add(server_type)
+
+        admins = ["Admin One", "Admin Two", "Admin Three"]
+        for admin in admins:
+            AdminOp.add(admin)
+
+        srv_one = ServerOp.add(
+            server_name, server_status, server_type, admins=[admins[0], admins[1]]
+        )
+        srv_two = ServerOp.add(
+            server_second_name, server_status, server_type, admins=admins
+        )
+
+        get_lonely = ServerOp.get(admins=[admins[2]])
+        self.assertTrue(len(get_lonely) is 1)
+        self.assertEqual(get_lonely[0], srv_two)
+        self.assertEqual(len(get_lonely[0].admins), len(admins))
+
+        get_all = ServerOp.get(admins=[admins[0]])
+        self.assertTrue(len(get_all) is 2)
+
     def case_get_by_all(self, refresh_db_before):
         """ Get server row with both srv_status
             srv_type keywords.
@@ -183,15 +402,58 @@ class TestServerOp(Asserts):
         ServerTypeOp.add("TypeOne")
         ServerTypeOp.add("TypeTwo")
 
-        srv_one = ServerOp.add(server_name, "StatusOne", "TypeOne")
+        IpOp.add("11.11.11.11")
+        IpOp.add("22.22.22.22")
 
-        ServerOp.add(server_second_name, "StatusTwo", "TypeTwo")
+        TagOp.add("Tag one")
+        TagOp.add("Tag two")
 
-        ServerOp.add(server_third_name, "StatusOne", "TypeTwo")
+        AdminOp.add("Admin One")
+        AdminOp.add("Admin Two")
 
-        srv_four = ServerOp.add(server_fourth_name, "StatusOne", "TypeOne")
+        srv_one = ServerOp.add(
+            server_name,
+            "StatusOne",
+            "TypeOne",
+            ips=["11.11.11.11"],
+            tags=["Tag one"],
+            admins=["Admin One"],
+        )
 
-        get_by_all = ServerOp.get(srv_status="StatusOne", srv_type="TypeOne")
+        ServerOp.add(
+            server_second_name,
+            "StatusTwo",
+            "TypeTwo",
+            ips=["22.22.22.22"],
+            tags=["Tag two"],
+            admins=["Admin Two"],
+        )
+
+        ServerOp.add(
+            server_third_name,
+            "StatusOne",
+            "TypeTwo",
+            ips=["22.22.22.22"],
+            tags=["Tag two"],
+            admins=["Admin Two"],
+        )
+
+        srv_four = ServerOp.add(
+            server_fourth_name,
+            "StatusOne",
+            "TypeOne",
+            ips=["11.11.11.11"],
+            tags=["Tag one"],
+            admins=["Admin One"],
+        )
+
+        get_by_all = ServerOp.get(
+            srv_status="StatusOne",
+            srv_type="TypeOne",
+            ip="11.11.11.11",
+            tags=["Tag one"],
+            admins=["Admin One"],
+        )
 
         self.assertTrue(len(get_by_all) is 2)
         self.assertEqual(get_by_all[0].id, 1)
@@ -299,6 +561,75 @@ class TestServerOp(Asserts):
         self.assertEqual(get_srv[0].id, 1)
         self.assertEqual(get_srv[0].description, desc_two)
 
+    def case_update_ips(self, refresh_db_before):
+        """ Update ip addresses. """
+        server_name = "TestServer"
+        ServerStatusOp.add("Status")
+        ServerTypeOp.add("Type")
+        ips_one = IpOp.add("11.11.11.11")
+        ips_two = IpOp.add("22.22.22.22")
+
+        srv = ServerOp.add(server_name, "Status", "Type", ips=["11.11.11.11"])
+
+        get_before_update = ServerOp.get()
+        self.assertTrue(len(get_before_update) is 1)
+        self.assertEqual(get_before_update[0].id, 1)
+        self.assertEqual(get_before_update[0].ips, [ips_one])
+
+        ServerOp.update(srv, ips=["22.22.22.22"])
+
+        get_srv = ServerOp.get()
+        self.assertTrue(len(get_srv) is 1)
+        self.assertEqual(get_srv[0].id, 1)
+        self.assertEqual(get_srv[0].ips, [ips_two])
+
+    def case_update_tags(self, refresh_db_before):
+        """ Update tags."""
+        server_name = "TestServer"
+        ServerStatusOp.add("Status")
+        ServerTypeOp.add("Type")
+
+        tag_one = TagOp.add("tag one")
+        tag_two = TagOp.add("tag two")
+
+        srv = ServerOp.add(server_name, "Status", "Type", tags=["tag one"])
+
+        get_before_update = ServerOp.get()
+        self.assertTrue(len(get_before_update) is 1)
+        self.assertEqual(get_before_update[0].id, 1)
+        self.assertEqual(get_before_update[0].tags, [tag_one])
+
+        ServerOp.update(srv, tags=["tag two"])
+
+        get_srv = ServerOp.get()
+        self.assertTrue(len(get_srv) is 1)
+        self.assertEqual(get_srv[0].id, 1)
+        self.assertEqual(get_srv[0].tags, [tag_two])
+
+    def case_update_admins(self, refresh_db_before):
+        """ Update admins."""
+        server_name = "TestServer"
+        ServerStatusOp.add("Status")
+        ServerTypeOp.add("Type")
+
+        admin_one = AdminOp.add("Admin One")
+        admin_two = AdminOp.add("Admin Two")
+
+        srv = ServerOp.add(server_name, "Status", "Type", admins=["Admin One"])
+
+        get_before_update = ServerOp.get()
+        self.assertTrue(len(get_before_update) is 1)
+        self.assertEqual(get_before_update[0].id, 1)
+        self.assertEqual(get_before_update[0].admins, [admin_one])
+
+        ServerOp.update(srv, admins=["Admin Two"])
+
+        get_srv = ServerOp.get()
+        self.assertTrue(len(get_srv) is 1)
+        self.assertEqual(get_srv[0].id, 1)
+        self.assertEqual(get_srv[0].admins, [admin_two])
+
+    @mark.one
     def case_update_all(self, refresh_db_before):
         """ Update all fields."""
         server_name = "TestServer"
@@ -309,8 +640,22 @@ class TestServerOp(Asserts):
         ServerTypeOp.add("TypeTwo")
         desc_one = "Desc one"
         desc_two = "Desc two"
+        ips_one = IpOp.add("11.11.11.11")
+        ips_two = IpOp.add("22.22.22.22")
+        tag_one = TagOp.add("tag one")
+        tag_two = TagOp.add("tag two")
+        admin_one = AdminOp.add("Admin One")
+        admin_two = AdminOp.add("Admin Two")
 
-        srv = ServerOp.add(server_name, "Status", "TypeOne", desc_one)
+        srv = ServerOp.add(
+            server_name,
+            "Status",
+            "TypeOne",
+            description=desc_one,
+            ips=["11.11.11.11"],
+            tags=["tag one"],
+            admins=["Admin One"],
+        )
 
         get_before_update = ServerOp.get()
         self.assertTrue(len(get_before_update) is 1)
@@ -319,6 +664,9 @@ class TestServerOp(Asserts):
         self.assertEqual(get_before_update[0].description, desc_one)
         self.assertEqual(get_before_update[0].status.name, "Status")
         self.assertEqual(get_before_update[0].type.name, "TypeOne")
+        self.assertEqual(get_before_update[0].ips, [ips_one])
+        self.assertEqual(get_before_update[0].tags, [tag_one])
+        self.assertEqual(get_before_update[0].admins, [admin_one])
 
         ServerOp.update(
             srv,
@@ -326,6 +674,9 @@ class TestServerOp(Asserts):
             description=desc_two,
             srv_status="StatusTwo",
             srv_type="TypeTwo",
+            ips=["22.22.22.22"],
+            tags=["tag two"],
+            admins=["Admin Two"],
         )
 
         get_srv = ServerOp.get()
@@ -335,6 +686,9 @@ class TestServerOp(Asserts):
         self.assertEqual(get_srv[0].description, desc_two)
         self.assertEqual(get_srv[0].status.name, "StatusTwo")
         self.assertEqual(get_srv[0].type.name, "TypeTwo")
+        self.assertEqual(get_srv[0].ips, [ips_two])
+        self.assertEqual(get_srv[0].tags, [tag_two])
+        self.assertEqual(get_srv[0].admins, [admin_two])
 
     def case_delete(self, refresh_db_before):
         """ Delete record."""

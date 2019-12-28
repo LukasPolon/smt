@@ -183,13 +183,105 @@ class TestServerOp(TestCase):
         mock_status_get_calls = [mock.call(name="TypeName")]
         mock_type_op.get.assert_has_calls(mock_status_get_calls)
 
+    @mock.patch(f"{OP_PATH}.IpOp")
+    def test_resolve_ip_positive(self, mock_ip_op):
+        """ Assumptions:
+                - IpOp.get() returns one record
+        """
+        mock_ip = mock.MagicMock()
+        mock_ip_op.get.return_value = [mock_ip]
+
+        resolved_ip_obj = ServerOp.resolve_ip("11.11.11.11")
+        self.assertEqual(resolved_ip_obj, mock_ip)
+
+        mock_ip_get_calls = [mock.call(address="11.11.11.11")]
+        mock_ip_op.get.assert_has_calls(mock_ip_get_calls)
+
+    @mock.patch(f"{OP_PATH}.IpOp")
+    def test_resolve_ip_not_found(self, mock_ip_op):
+        """ Assumptions:
+                - IpOp.get() returns no records
+        """
+        mock_ip_op.get.return_value = list()
+
+        with self.assertRaisesRegex(ValueError, "Not found"):
+            ServerOp.resolve_ip("11.11.11.11")
+
+        mock_ip_get_calls = [mock.call(address="11.11.11.11")]
+        mock_ip_op.get.assert_has_calls(mock_ip_get_calls)
+
+    @mock.patch(f"{OP_PATH}.TagOp")
+    def test_resolve_tag_positive(self, mock_tag_op):
+        """ Assumptions:
+                - TagOp.get() returns one record
+        """
+        mock_tag = mock.MagicMock()
+        mock_tag_op.get.return_value = [mock_tag]
+
+        resolved_tag_obj = ServerOp.resolve_tag("tag")
+        self.assertEqual(resolved_tag_obj, mock_tag)
+
+        mock_tag_get_calls = [mock.call(name="tag")]
+        mock_tag_op.get.assert_has_calls(mock_tag_get_calls)
+
+    @mock.patch(f"{OP_PATH}.TagOp")
+    def test_resolve_tag_not_found(self, mock_tag_op):
+        """ Assumptions:
+                - TagOp.get() returns no records
+        """
+        mock_tag_op.get.return_value = list()
+
+        with self.assertRaisesRegex(ValueError, "Not found"):
+            ServerOp.resolve_tag("tag")
+
+        mock_tag_get_calls = [mock.call(name="tag")]
+        mock_tag_op.get.assert_has_calls(mock_tag_get_calls)
+
+    @mock.patch(f"{OP_PATH}.AdminOp")
+    def test_resolve_admin_positive(self, mock_admin_op):
+        """ Assumptions:
+                - AdminOp.get() returns one record
+        """
+        mock_admin = mock.MagicMock()
+        mock_admin_op.get.return_value = [mock_admin]
+
+        resolved_adm_obj = ServerOp.resolve_admin("admin")
+        self.assertEqual(resolved_adm_obj, mock_admin)
+
+        mock_adm_get_calls = [mock.call(name="admin")]
+        mock_admin_op.get.assert_has_calls(mock_adm_get_calls)
+
+    @mock.patch(f"{OP_PATH}.AdminOp")
+    def test_resolve_admin_not_found(self, mock_admin_op):
+        """ Assumptions:
+                - AdminOp.get() returns no records
+        """
+        mock_admin_op.get.return_value = list()
+
+        with self.assertRaisesRegex(ValueError, "Not found"):
+            ServerOp.resolve_admin("admin")
+
+        mock_adm_get_calls = [mock.call(name="admin")]
+        mock_admin_op.get.assert_has_calls(mock_adm_get_calls)
+
     @mock.patch(f"{OP_PATH}.Server")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_admin")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_tag")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_ip")
     @mock.patch(f"{OP_PATH}.ServerOp.resolve_type")
     @mock.patch(f"{OP_PATH}.ServerOp.resolve_status")
     @mock.patch(f"{OP_PATH}.ServerOp.validate_name")
     @mock.patch(f"{OP_PATH}.ServerOp.validate_id")
     def test_get_by_id(
-        self, mock_val_id, mock_val_name, mock_res_status, mock_res_type, mock_server
+        self,
+        mock_val_id,
+        mock_val_name,
+        mock_res_status,
+        mock_res_type,
+        mock_res_ip,
+        mock_res_tag,
+        mock_res_adm,
+        mock_server,
     ):
         """ Assumptions:
                 - used filter: id
@@ -202,14 +294,28 @@ class TestServerOp(TestCase):
         self.assertFalse(mock_val_name.called)
         self.assertFalse(mock_res_status.called)
         self.assertFalse(mock_res_type.called)
+        self.assertFalse(mock_res_ip.called)
+        self.assertFalse(mock_res_tag.called)
+        self.assertFalse(mock_res_adm.called)
 
     @mock.patch(f"{OP_PATH}.Server")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_admin")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_tag")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_ip")
     @mock.patch(f"{OP_PATH}.ServerOp.resolve_type")
     @mock.patch(f"{OP_PATH}.ServerOp.resolve_status")
     @mock.patch(f"{OP_PATH}.ServerOp.validate_name")
     @mock.patch(f"{OP_PATH}.ServerOp.validate_id")
     def test_get_by_name(
-        self, mock_val_id, mock_val_name, mock_res_status, mock_res_type, mock_server
+        self,
+        mock_val_id,
+        mock_val_name,
+        mock_res_status,
+        mock_res_type,
+        mock_res_ip,
+        mock_res_tag,
+        mock_res_adm,
+        mock_server,
     ):
         """ Assumptions:
                 - used filter: name
@@ -222,14 +328,28 @@ class TestServerOp(TestCase):
         self.assertTrue(mock_val_name.called)
         self.assertFalse(mock_res_status.called)
         self.assertFalse(mock_res_type.called)
+        self.assertFalse(mock_res_ip.called)
+        self.assertFalse(mock_res_tag.called)
+        self.assertFalse(mock_res_adm.called)
 
     @mock.patch(f"{OP_PATH}.Server")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_admin")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_tag")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_ip")
     @mock.patch(f"{OP_PATH}.ServerOp.resolve_type")
     @mock.patch(f"{OP_PATH}.ServerOp.resolve_status")
     @mock.patch(f"{OP_PATH}.ServerOp.validate_name")
     @mock.patch(f"{OP_PATH}.ServerOp.validate_id")
     def test_get_by_srv_status(
-        self, mock_val_id, mock_val_name, mock_res_status, mock_res_type, mock_server
+        self,
+        mock_val_id,
+        mock_val_name,
+        mock_res_status,
+        mock_res_type,
+        mock_res_ip,
+        mock_res_tag,
+        mock_res_adm,
+        mock_server,
     ):
         """ Assumptions:
                 - used filter: srv_status
@@ -242,14 +362,28 @@ class TestServerOp(TestCase):
         self.assertFalse(mock_val_name.called)
         self.assertTrue(mock_res_status.called)
         self.assertFalse(mock_res_type.called)
+        self.assertFalse(mock_res_ip.called)
+        self.assertFalse(mock_res_tag.called)
+        self.assertFalse(mock_res_adm.called)
 
     @mock.patch(f"{OP_PATH}.Server")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_admin")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_tag")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_ip")
     @mock.patch(f"{OP_PATH}.ServerOp.resolve_type")
     @mock.patch(f"{OP_PATH}.ServerOp.resolve_status")
     @mock.patch(f"{OP_PATH}.ServerOp.validate_name")
     @mock.patch(f"{OP_PATH}.ServerOp.validate_id")
     def test_get_by_srv_type(
-        self, mock_val_id, mock_val_name, mock_res_status, mock_res_type, mock_server
+        self,
+        mock_val_id,
+        mock_val_name,
+        mock_res_status,
+        mock_res_type,
+        mock_res_ip,
+        mock_res_tag,
+        mock_res_adm,
+        mock_server,
     ):
         """ Assumptions:
                 - used filter: srv_type
@@ -262,52 +396,327 @@ class TestServerOp(TestCase):
         self.assertFalse(mock_val_name.called)
         self.assertFalse(mock_res_status.called)
         self.assertTrue(mock_res_type.called)
+        self.assertFalse(mock_res_ip.called)
+        self.assertFalse(mock_res_tag.called)
+        self.assertFalse(mock_res_adm.called)
 
     @mock.patch(f"{OP_PATH}.Server")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_admin")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_tag")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_ip")
     @mock.patch(f"{OP_PATH}.ServerOp.resolve_type")
     @mock.patch(f"{OP_PATH}.ServerOp.resolve_status")
     @mock.patch(f"{OP_PATH}.ServerOp.validate_name")
     @mock.patch(f"{OP_PATH}.ServerOp.validate_id")
-    def test_get_by_all(
-        self, mock_val_id, mock_val_name, mock_res_status, mock_res_type, mock_server
+    def test_get_by_ip(
+        self,
+        mock_val_id,
+        mock_val_name,
+        mock_res_status,
+        mock_res_type,
+        mock_res_ip,
+        mock_res_tag,
+        mock_res_adm,
+        mock_server,
+    ):
+        """ Assumptions:
+                - used filter: ip
+        """
+        mock_ip_obj = mock.MagicMock(name="MockIpObj")
+        mock_res_ip.return_value = mock_ip_obj
+
+        mock_srv = mock.MagicMock(name="MockSrv")
+        mock_srv.ips = [mock_ip_obj]
+
+        mock_server.query.filter_by().all.return_value = [mock_srv]
+
+        result = ServerOp.get(ip="11.11.11.11")
+        self.assertEqual([mock_srv], result)
+
+        self.assertFalse(mock_val_id.called)
+        self.assertFalse(mock_val_name.called)
+        self.assertFalse(mock_res_status.called)
+        self.assertFalse(mock_res_type.called)
+        self.assertTrue(mock_res_ip.called)
+        self.assertFalse(mock_res_tag.called)
+        self.assertFalse(mock_res_adm.called)
+
+    @mock.patch(f"{OP_PATH}.Server")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_admin")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_tag")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_ip")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_type")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_status")
+    @mock.patch(f"{OP_PATH}.ServerOp.validate_name")
+    @mock.patch(f"{OP_PATH}.ServerOp.validate_id")
+    def test_get_by_tags(
+        self,
+        mock_val_id,
+        mock_val_name,
+        mock_res_status,
+        mock_res_type,
+        mock_res_ip,
+        mock_res_tag,
+        mock_res_adm,
+        mock_server,
+    ):
+        """ Assumptions:
+                - used filter: tags
+        """
+        mock_tag_obj = mock.MagicMock(name="MockTagObj")
+        mock_res_tag.return_value = mock_tag_obj
+
+        mock_srv = mock.MagicMock(name="MockSrv")
+        mock_srv.tags = [mock_tag_obj]
+
+        mock_server.query.filter_by().all.return_value = [mock_srv]
+
+        result = ServerOp.get(tags=["tag"])
+        self.assertEqual([mock_srv], result)
+
+        self.assertFalse(mock_val_id.called)
+        self.assertFalse(mock_val_name.called)
+        self.assertFalse(mock_res_status.called)
+        self.assertFalse(mock_res_type.called)
+        self.assertFalse(mock_res_ip.called)
+        self.assertTrue(mock_res_tag.called)
+        self.assertFalse(mock_res_adm.called)
+
+    @mock.patch(f"{OP_PATH}.Server")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_admin")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_tag")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_ip")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_type")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_status")
+    @mock.patch(f"{OP_PATH}.ServerOp.validate_name")
+    @mock.patch(f"{OP_PATH}.ServerOp.validate_id")
+    def test_get_by_admins(
+        self,
+        mock_val_id,
+        mock_val_name,
+        mock_res_status,
+        mock_res_type,
+        mock_res_ip,
+        mock_res_tag,
+        mock_res_adm,
+        mock_server,
+    ):
+        """ Assumptions:
+                - used filter: admins
+        """
+        mock_adm_obj = mock.MagicMock(name="MockAdmObj")
+        mock_res_adm.return_value = mock_adm_obj
+
+        mock_srv = mock.MagicMock(name="MockSrv")
+        mock_srv.admins = [mock_adm_obj]
+
+        mock_server.query.filter_by().all.return_value = [mock_srv]
+
+        result = ServerOp.get(admins=["admin"])
+        self.assertEqual([mock_srv], result)
+
+        self.assertFalse(mock_val_id.called)
+        self.assertFalse(mock_val_name.called)
+        self.assertFalse(mock_res_status.called)
+        self.assertFalse(mock_res_type.called)
+        self.assertFalse(mock_res_ip.called)
+        self.assertFalse(mock_res_tag.called)
+        self.assertTrue(mock_res_adm.called)
+
+    @mock.patch(f"{OP_PATH}.Server")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_admin")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_tag")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_ip")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_type")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_status")
+    @mock.patch(f"{OP_PATH}.ServerOp.validate_name")
+    @mock.patch(f"{OP_PATH}.ServerOp.validate_id")
+    def get_by_all(
+        self,
+        mock_val_id,
+        mock_val_name,
+        mock_res_status,
+        mock_res_type,
+        mock_res_ip,
+        mock_res_tag,
+        mock_res_adm,
+        mock_server,
     ):
         """ Assumptions:
                 - used all filters
         """
         exp_mock = mock_server.query.filter_by().all()
-        result = ServerOp.get(id=1, name="Name", srv_status="Status", srv_type="Type")
+        result = ServerOp.get(
+            id=1,
+            name="Name",
+            srv_status="Status",
+            srv_type="Type",
+            ip="11.11.11.11",
+            tags=["tag"],
+            admins=["admin"],
+        )
         self.assertEqual(exp_mock, result)
 
         self.assertTrue(mock_val_id.called)
         self.assertTrue(mock_val_name.called)
         self.assertTrue(mock_res_status.called)
         self.assertTrue(mock_res_type.called)
+        self.assertTrue(mock_res_ip.called)
+        self.assertTrue(mock_res_tag.called)
+        self.assertTrue(mock_res_adm.called)
 
     @mock.patch(f"{OP_PATH}.DB")
     @mock.patch(f"{OP_PATH}.Server")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_admin")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_tag")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_ip")
     @mock.patch(f"{OP_PATH}.ServerOp.resolve_type")
     @mock.patch(f"{OP_PATH}.ServerOp.resolve_status")
     @mock.patch(f"{OP_PATH}.ServerOp.validate_name")
-    def test_add(
-        self, mock_val_name, mock_res_status, mock_res_type, mock_server, mock_db
+    def test_add_basic(
+        self,
+        mock_val_name,
+        mock_res_status,
+        mock_res_type,
+        mock_res_ip,
+        mock_res_tag,
+        mock_res_adm,
+        mock_server,
+        mock_db,
     ):
-        """ Add new Server record."""
+        """ Add new Server record without ip and tags."""
         result = ServerOp.add("Name", "SrvStatus", "SrvType")
         self.assertEqual(result, mock_server())
 
         self.assertTrue(mock_val_name.called)
         self.assertTrue(mock_res_type.called)
         self.assertTrue(mock_res_status.called)
+        self.assertFalse(mock_res_ip.called)
+        self.assertFalse(mock_res_tag.called)
+        self.assertTrue(mock_db.session.add.called)
+        self.assertTrue(mock_db.session.commit.called)
+        self.assertFalse(mock_res_adm.called)
+
+    @mock.patch(f"{OP_PATH}.DB")
+    @mock.patch(f"{OP_PATH}.Server")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_admin")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_tag")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_ip")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_type")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_status")
+    @mock.patch(f"{OP_PATH}.ServerOp.validate_name")
+    def test_add_with_ips(
+        self,
+        mock_val_name,
+        mock_res_status,
+        mock_res_type,
+        mock_res_ip,
+        mock_res_tag,
+        mock_res_adm,
+        mock_server,
+        mock_db,
+    ):
+        """ Add new Server record with ip."""
+        result = ServerOp.add("Name", "SrvStatus", "SrvType", ips=["11.11.11.11"])
+        self.assertEqual(result, mock_server())
+
+        self.assertTrue(mock_val_name.called)
+        self.assertTrue(mock_res_type.called)
+        self.assertTrue(mock_res_status.called)
+
+        self.assertTrue(mock_res_ip.called)
+        self.assertFalse(mock_res_tag.called)
+        self.assertFalse(mock_res_adm.called)
+
         self.assertTrue(mock_db.session.add.called)
         self.assertTrue(mock_db.session.commit.called)
 
     @mock.patch(f"{OP_PATH}.DB")
+    @mock.patch(f"{OP_PATH}.Server")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_admin")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_tag")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_ip")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_type")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_status")
+    @mock.patch(f"{OP_PATH}.ServerOp.validate_name")
+    def test_add_with_tags(
+        self,
+        mock_val_name,
+        mock_res_status,
+        mock_res_type,
+        mock_res_ip,
+        mock_res_tag,
+        mock_res_adm,
+        mock_server,
+        mock_db,
+    ):
+        """ Add new Server record with tags."""
+        result = ServerOp.add("Name", "SrvStatus", "SrvType", tags=["tags"])
+        self.assertEqual(result, mock_server())
+
+        self.assertTrue(mock_val_name.called)
+        self.assertTrue(mock_res_type.called)
+        self.assertTrue(mock_res_status.called)
+
+        self.assertFalse(mock_res_ip.called)
+        self.assertTrue(mock_res_tag.called)
+        self.assertFalse(mock_res_adm.called)
+
+        self.assertTrue(mock_db.session.add.called)
+        self.assertTrue(mock_db.session.commit.called)
+
+    @mock.patch(f"{OP_PATH}.DB")
+    @mock.patch(f"{OP_PATH}.Server")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_admin")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_tag")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_ip")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_type")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_status")
+    @mock.patch(f"{OP_PATH}.ServerOp.validate_name")
+    def test_add_with_admins(
+        self,
+        mock_val_name,
+        mock_res_status,
+        mock_res_type,
+        mock_res_ip,
+        mock_res_tag,
+        mock_res_adm,
+        mock_server,
+        mock_db,
+    ):
+        """ Add new Server record with admins."""
+        result = ServerOp.add("Name", "SrvStatus", "SrvType", admins=["admin"])
+        self.assertEqual(result, mock_server())
+
+        self.assertTrue(mock_val_name.called)
+        self.assertTrue(mock_res_type.called)
+        self.assertTrue(mock_res_status.called)
+
+        self.assertFalse(mock_res_ip.called)
+        self.assertFalse(mock_res_tag.called)
+        self.assertTrue(mock_res_adm.called)
+
+        self.assertTrue(mock_db.session.add.called)
+        self.assertTrue(mock_db.session.commit.called)
+
+    @mock.patch(f"{OP_PATH}.DB")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_admin")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_tag")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_ip")
     @mock.patch(f"{OP_PATH}.ServerOp.validate_description")
     @mock.patch(f"{OP_PATH}.ServerOp.resolve_type")
     @mock.patch(f"{OP_PATH}.ServerOp.resolve_status")
     @mock.patch(f"{OP_PATH}.ServerOp.validate_name")
     def test_update_name(
-        self, mock_val_name, mock_res_status, mock_res_type, mock_val_desc, mock_db
+        self,
+        mock_val_name,
+        mock_res_status,
+        mock_res_type,
+        mock_val_desc,
+        mock_res_ip,
+        mock_res_tag,
+        mock_res_adm,
+        mock_db,
     ):
         """ Update name in the existing record."""
         mock_srv_obj = mock.MagicMock()
@@ -321,17 +730,31 @@ class TestServerOp(TestCase):
         self.assertFalse(mock_res_status.called)
         self.assertFalse(mock_res_type.called)
         self.assertFalse(mock_val_desc.called)
+        self.assertFalse(mock_res_ip.called)
+        self.assertFalse(mock_res_tag.called)
+        self.assertFalse(mock_res_adm.called)
 
         self.assertTrue(mock_db.session.add.called)
         self.assertTrue(mock_db.session.commit.called)
 
     @mock.patch(f"{OP_PATH}.DB")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_admin")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_tag")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_ip")
     @mock.patch(f"{OP_PATH}.ServerOp.validate_description")
     @mock.patch(f"{OP_PATH}.ServerOp.resolve_type")
     @mock.patch(f"{OP_PATH}.ServerOp.resolve_status")
     @mock.patch(f"{OP_PATH}.ServerOp.validate_name")
     def test_update_srv_status(
-        self, mock_val_name, mock_res_status, mock_res_type, mock_val_desc, mock_db
+        self,
+        mock_val_name,
+        mock_res_status,
+        mock_res_type,
+        mock_val_desc,
+        mock_res_ip,
+        mock_res_tag,
+        mock_res_adm,
+        mock_db,
     ):
         """ Update srv_status in the existing record."""
         mock_res_status.return_value = 222
@@ -346,17 +769,31 @@ class TestServerOp(TestCase):
         self.assertTrue(mock_res_status.called)
         self.assertFalse(mock_res_type.called)
         self.assertFalse(mock_val_desc.called)
+        self.assertFalse(mock_res_ip.called)
+        self.assertFalse(mock_res_tag.called)
+        self.assertFalse(mock_res_adm.called)
 
         self.assertTrue(mock_db.session.add.called)
         self.assertTrue(mock_db.session.commit.called)
 
     @mock.patch(f"{OP_PATH}.DB")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_admin")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_tag")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_ip")
     @mock.patch(f"{OP_PATH}.ServerOp.validate_description")
     @mock.patch(f"{OP_PATH}.ServerOp.resolve_type")
     @mock.patch(f"{OP_PATH}.ServerOp.resolve_status")
     @mock.patch(f"{OP_PATH}.ServerOp.validate_name")
     def test_update_srv_type(
-        self, mock_val_name, mock_res_status, mock_res_type, mock_val_desc, mock_db
+        self,
+        mock_val_name,
+        mock_res_status,
+        mock_res_type,
+        mock_val_desc,
+        mock_res_ip,
+        mock_res_tag,
+        mock_res_adm,
+        mock_db,
     ):
         """ Update srv_type in the existing record."""
         mock_res_type.return_value = 222
@@ -371,17 +808,31 @@ class TestServerOp(TestCase):
         self.assertFalse(mock_res_status.called)
         self.assertTrue(mock_res_type.called)
         self.assertFalse(mock_val_desc.called)
+        self.assertFalse(mock_res_ip.called)
+        self.assertFalse(mock_res_tag.called)
+        self.assertFalse(mock_res_adm.called)
 
         self.assertTrue(mock_db.session.add.called)
         self.assertTrue(mock_db.session.commit.called)
 
     @mock.patch(f"{OP_PATH}.DB")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_admin")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_tag")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_ip")
     @mock.patch(f"{OP_PATH}.ServerOp.validate_description")
     @mock.patch(f"{OP_PATH}.ServerOp.resolve_type")
     @mock.patch(f"{OP_PATH}.ServerOp.resolve_status")
     @mock.patch(f"{OP_PATH}.ServerOp.validate_name")
     def test_update_description(
-        self, mock_val_name, mock_res_status, mock_res_type, mock_val_desc, mock_db
+        self,
+        mock_val_name,
+        mock_res_status,
+        mock_res_type,
+        mock_val_desc,
+        mock_res_ip,
+        mock_res_tag,
+        mock_res_adm,
+        mock_db,
     ):
         """ Update description in the existing record."""
         mock_srv_obj = mock.MagicMock()
@@ -395,6 +846,123 @@ class TestServerOp(TestCase):
         self.assertFalse(mock_res_status.called)
         self.assertFalse(mock_res_type.called)
         self.assertTrue(mock_val_desc.called)
+        self.assertFalse(mock_res_ip.called)
+        self.assertFalse(mock_res_tag.called)
+        self.assertFalse(mock_res_adm.called)
+
+        self.assertTrue(mock_db.session.add.called)
+        self.assertTrue(mock_db.session.commit.called)
+
+    @mock.patch(f"{OP_PATH}.DB")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_admin")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_tag")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_ip")
+    @mock.patch(f"{OP_PATH}.ServerOp.validate_description")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_type")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_status")
+    @mock.patch(f"{OP_PATH}.ServerOp.validate_name")
+    def test_update_ips(
+        self,
+        mock_val_name,
+        mock_res_status,
+        mock_res_type,
+        mock_val_desc,
+        mock_res_ip,
+        mock_res_tag,
+        mock_res_adm,
+        mock_db,
+    ):
+        """ Update ip addresses in the existing record."""
+        mock_srv_obj = mock.MagicMock()
+        mock_srv_obj.ips = ["11.11.11.11"]
+
+        mock_updated = ServerOp.update(mock_srv_obj, ips=["22.22.22.22"])
+
+        self.assertEqual(mock_updated.ips, [mock_res_ip()])
+
+        self.assertFalse(mock_val_name.called)
+        self.assertFalse(mock_res_status.called)
+        self.assertFalse(mock_res_type.called)
+        self.assertFalse(mock_val_desc.called)
+        self.assertTrue(mock_res_ip.called)
+        self.assertFalse(mock_res_tag.called)
+        self.assertFalse(mock_res_adm.called)
+
+        self.assertTrue(mock_db.session.add.called)
+        self.assertTrue(mock_db.session.commit.called)
+
+    @mock.patch(f"{OP_PATH}.DB")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_admin")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_tag")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_ip")
+    @mock.patch(f"{OP_PATH}.ServerOp.validate_description")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_type")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_status")
+    @mock.patch(f"{OP_PATH}.ServerOp.validate_name")
+    def test_update_tags(
+        self,
+        mock_val_name,
+        mock_res_status,
+        mock_res_type,
+        mock_val_desc,
+        mock_res_ip,
+        mock_res_tag,
+        mock_res_adm,
+        mock_db,
+    ):
+        """ Update tags in the existing record."""
+        mock_srv_obj = mock.MagicMock()
+        mock_srv_obj.tags = ["tag"]
+
+        mock_updated = ServerOp.update(mock_srv_obj, tags=["tag"])
+
+        self.assertEqual(mock_updated.tags, [mock_res_tag()])
+
+        self.assertFalse(mock_val_name.called)
+        self.assertFalse(mock_res_status.called)
+        self.assertFalse(mock_res_type.called)
+        self.assertFalse(mock_val_desc.called)
+        self.assertFalse(mock_res_ip.called)
+        self.assertTrue(mock_res_tag.called)
+        self.assertFalse(mock_res_adm.called)
+
+        self.assertTrue(mock_db.session.add.called)
+        self.assertTrue(mock_db.session.commit.called)
+
+    @mock.patch(f"{OP_PATH}.DB")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_admin")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_tag")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_ip")
+    @mock.patch(f"{OP_PATH}.ServerOp.validate_description")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_type")
+    @mock.patch(f"{OP_PATH}.ServerOp.resolve_status")
+    @mock.patch(f"{OP_PATH}.ServerOp.validate_name")
+    def test_update_admins(
+        self,
+        mock_val_name,
+        mock_res_status,
+        mock_res_type,
+        mock_val_desc,
+        mock_res_ip,
+        mock_res_tag,
+        mock_res_adm,
+        mock_db,
+    ):
+        """ Update admins in the existing record."""
+        mock_srv_obj = mock.MagicMock()
+        mock_srv_obj.admins = ["adm"]
+
+        mock_updated = ServerOp.update(mock_srv_obj, admins=["adm"])
+
+        self.assertEqual(mock_updated.admins, [mock_res_adm()])
+
+        self.assertFalse(mock_val_name.called)
+        self.assertFalse(mock_res_status.called)
+        self.assertFalse(mock_res_type.called)
+        self.assertFalse(mock_val_desc.called)
+        self.assertFalse(mock_res_ip.called)
+        self.assertFalse(mock_res_tag.called)
+        self.assertTrue(mock_res_adm.called)
 
         self.assertTrue(mock_db.session.add.called)
         self.assertTrue(mock_db.session.commit.called)
