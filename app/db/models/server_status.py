@@ -7,6 +7,7 @@ class ServerStatus(DB.Model):
 
     id = DB.Column(DB.Integer, primary_key=True)
     name = DB.Column(DB.String(), nullable=False)
+
     servers = DB.relationship("Server", backref="status", lazy=True)
 
     def __init__(self, name):
