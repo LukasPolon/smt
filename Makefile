@@ -10,7 +10,6 @@ black-lint:
 
 unit-tests:
 	coverage run -m unittest
-	coverage report
 
 integration-tests:
 	pytest -m "db_operations"
