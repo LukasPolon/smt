@@ -17,9 +17,11 @@ exclude_lines =
 [run]
 omit =
     *__init__.py
-source =
-    app/
+source = app
+
+parallel = True
 
 [paths]
 source =
-    tests/units/
+    app
+    /smt/app

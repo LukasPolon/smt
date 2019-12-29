@@ -21,3 +21,11 @@ script:
   - docker exec -it smt make unit-tests
   - docker exec -it smt make integration-tests
   - docker exec -it smt make black-check
+
+after_success:
+  - pip install coveralls
+  - docker cp smt:/smt/ ./smt/
+  - (cd smt && ls -al)
+  - (cd smt && coverage combine)
+  - (cd smt && coverage report)
+  - (cd smt && coveralls)
