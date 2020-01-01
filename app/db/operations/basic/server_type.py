@@ -2,6 +2,8 @@ import re
 
 from app import DB
 from app.db.models.server_type import ServerType
+from app.db.exceptions import ServerTypeIdNotValidError
+from app.db.exceptions import ServerTypeNameNotValidError
 
 
 class ServerTypeOp:
@@ -18,7 +20,7 @@ class ServerTypeOp:
                 id(int): ServerType model id field
         """
         if not isinstance(id, int):
-            raise ValueError("Field: id must be Integer.")
+            raise ServerTypeIdNotValidError("Field: id must be Integer.")
 
     @classmethod
     def validate_name(cls, name):
@@ -33,18 +35,22 @@ class ServerTypeOp:
                 name(str): ServerType model name field
         """
         if not isinstance(name, str):
-            raise ValueError("Field: name must be String.")
+            raise ServerTypeNameNotValidError("Field: name must be String.")
 
         if len(name) < 1 or len(name) > 20:
-            raise ValueError(
+            raise ServerTypeNameNotValidError(
                 "Field: name have wrong length. Should be in range 1 - 20."
             )
 
         if not re.match(r"[A-Za-z ]+\Z", name):
-            raise ValueError("Field: name does not match regex: [A-Za-z ]+")
+            raise ServerTypeNameNotValidError(
+                "Field: name does not match regex: [A-Za-z ]+"
+            )
 
         if not name[0].isupper():
-            raise ValueError("Field: name must start with capital letter.")
+            raise ServerTypeNameNotValidError(
+                "Field: name must start with capital letter."
+            )
 
     @classmethod
     def get(cls, id=None, name=None):

@@ -8,6 +8,21 @@ from app.db.operations.basic.ip import IpOp
 from app.db.operations.basic.tag import TagOp
 from app.db.operations.basic.admin import AdminOp
 
+from app.db.exceptions import ServerStatusError
+from app.db.exceptions import ServerTypeError
+from app.db.exceptions import IpError
+from app.db.exceptions import TagError
+from app.db.exceptions import AdminError
+
+from app.db.exceptions import ServerIdNotValidError
+from app.db.exceptions import ServerNameNotValidError
+from app.db.exceptions import ServerDescriptionNotValidError
+from app.db.exceptions import ServerStatusNotFoundError
+from app.db.exceptions import ServerTypeNotFoundError
+from app.db.exceptions import ServerIpNotFoundError
+from app.db.exceptions import ServerTagNotFoundError
+from app.db.exceptions import ServerAdminNotFoundError
+
 
 class ServerOp:
     """ Operations for Server model."""
@@ -23,7 +38,7 @@ class ServerOp:
                 id(int): Server model id field
         """
         if not isinstance(id, int):
-            raise ValueError("Field: id must be Integer.")
+            raise ServerIdNotValidError("Field: id must be Integer.")
 
     @classmethod
     def validate_name(cls, name):
@@ -37,13 +52,17 @@ class ServerOp:
                 name(str): Server model name field
         """
         if not isinstance(name, str):
-            raise ValueError("Field: name must be String.")
+            raise ServerNameNotValidError("Field: name must be String.")
 
         if len(name) < 1 or len(name) > 30:
-            raise ValueError("Field: name have wrong length. Should be in range 1-30.")
+            raise ServerNameNotValidError(
+                "Field: name have wrong length. Should be in range 1-30."
+            )
 
         if not re.match(r"[A-Za-z0-9_]+\Z", name):
-            raise ValueError("Field: name does not match regex: [A-Za-z0-9_]+")
+            raise ServerNameNotValidError(
+                "Field: name does not match regex: [A-Za-z0-9_]+"
+            )
 
     @classmethod
     def validate_description(cls, desc):
@@ -57,15 +76,17 @@ class ServerOp:
                 desc(str): Server model description field
         """
         if not isinstance(desc, str):
-            raise ValueError("Field: description must be String.")
+            raise ServerDescriptionNotValidError("Field: description must be String.")
 
         if len(desc) < 1 or len(desc) > 60:
-            raise ValueError(
+            raise ServerDescriptionNotValidError(
                 "Field: description have wrong length. Should be in range 1-60."
             )
 
         if not re.match(r"[A-Za-z0-9_ ]+\Z", desc):
-            raise ValueError("Field: name does not match regex: [A-Za-z0-9_ ]+")
+            raise ServerDescriptionNotValidError(
+                "Field: name does not match regex: [A-Za-z0-9_ ]+"
+            )
 
     @classmethod
     def resolve_status(cls, status_name):
@@ -81,7 +102,7 @@ class ServerOp:
         status_results = ServerStatusOp.get(name=status_name)
 
         if len(status_results) is not 1:
-            raise ValueError(f'Not found status name: "{status_name}".')
+            raise ServerStatusNotFoundError(f'Not found status name: "{status_name}".')
 
         status_id = status_results[0].id
         return status_id
@@ -100,7 +121,7 @@ class ServerOp:
         type_results = ServerTypeOp.get(name=type_name)
 
         if len(type_results) is not 1:
-            raise ValueError(f'Not found type name: "{type_name}".')
+            raise ServerTypeNotFoundError(f'Not found type name: "{type_name}".')
 
         type_id = type_results[0].id
         return type_id
@@ -119,7 +140,7 @@ class ServerOp:
         ip_results = IpOp.get(address=ip_address)
 
         if len(ip_results) is not 1:
-            raise ValueError(f"Not found IP address: {ip_address}.")
+            raise ServerIpNotFoundError(f"Not found IP address: {ip_address}.")
 
         ip_obj = ip_results[0]
         return ip_obj
@@ -138,7 +159,7 @@ class ServerOp:
         tag_results = TagOp.get(name=tag_name)
 
         if len(tag_results) is not 1:
-            raise ValueError(f"Not found Tag: {tag_name}.")
+            raise ServerTagNotFoundError(f"Not found Tag: {tag_name}.")
 
         tag_obj = tag_results[0]
         return tag_obj
@@ -157,7 +178,7 @@ class ServerOp:
         admin_results = AdminOp.get(name=admin_name)
 
         if len(admin_results) is not 1:
-            raise ValueError(f"Not found Admin: {admin_name}.")
+            raise ServerAdminNotFoundError(f"Not found Admin: {admin_name}.")
 
         admin_obj = admin_results[0]
         return admin_obj

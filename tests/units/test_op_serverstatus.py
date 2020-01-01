@@ -2,6 +2,8 @@ from unittest import TestCase
 from unittest import mock
 
 from app.db.operations.basic.server_status import ServerStatusOp
+from app.db.exceptions import ServerStatusIdNotValidError
+from app.db.exceptions import ServerStatusNameNotValidError
 
 
 OP_PATH = "app.db.operations.basic.server_status"
@@ -17,15 +19,15 @@ class TestServerStatusOp(TestCase):
         positive_id = 1
         try:
             ServerStatusOp.validate_id(positive_id)
-        except ValueError:
-            self.fail("ValueError raised.")
+        except ServerStatusIdNotValidError:
+            self.fail("ServerStatusIdNotValidError raised.")
 
     def test_validate_id_negative(self):
         """ Assumptions:
                 - given id is not Integer (String instead)
         """
         negative_id = "1"
-        with self.assertRaisesRegex(ValueError, "must be Integer"):
+        with self.assertRaisesRegex(ServerStatusIdNotValidError, "must be Integer"):
             ServerStatusOp.validate_id(negative_id)
 
     def test_validate_name_not_string(self):
@@ -33,7 +35,7 @@ class TestServerStatusOp(TestCase):
                 - given name is not a string
         """
         name = 1111
-        with self.assertRaisesRegex(ValueError, "must be String"):
+        with self.assertRaisesRegex(ServerStatusNameNotValidError, "must be String"):
             ServerStatusOp.validate_name(name)
 
     def test_validate_name_too_short(self):
@@ -41,7 +43,7 @@ class TestServerStatusOp(TestCase):
                 - given name have 0 length
         """
         name = ""
-        with self.assertRaisesRegex(ValueError, "have wrong length"):
+        with self.assertRaisesRegex(ServerStatusNameNotValidError, "have wrong length"):
             ServerStatusOp.validate_name(name)
 
     def test_validate_name_too_long(self):
@@ -49,7 +51,7 @@ class TestServerStatusOp(TestCase):
                 - given name have length == 21
         """
         name = "A" * 21
-        with self.assertRaisesRegex(ValueError, "have wrong length"):
+        with self.assertRaisesRegex(ServerStatusNameNotValidError, "have wrong length"):
             ServerStatusOp.validate_name(name)
 
     def test_validate_name_good_length(self):
@@ -60,8 +62,8 @@ class TestServerStatusOp(TestCase):
         for name in names:
             try:
                 ServerStatusOp.validate_name(name)
-            except ValueError:
-                self.fail("ValueError raised.")
+            except ServerStatusNameNotValidError:
+                self.fail("ServerStatusNameNotValidError raised.")
 
     def test_validate_name_incorrect_regex(self):
         """ Assumptions:
@@ -69,7 +71,9 @@ class TestServerStatusOp(TestCase):
         """
         wrong_names = ["A1", "Aa+", "A-", "A!@#$%^&"]
         for wrong_name in wrong_names:
-            with self.assertRaisesRegex(ValueError, "does not match regex"):
+            with self.assertRaisesRegex(
+                ServerStatusNameNotValidError, "does not match regex"
+            ):
                 ServerStatusOp.validate_name(wrong_name)
 
     def test_validate_name_correct_regex(self):
@@ -80,15 +84,17 @@ class TestServerStatusOp(TestCase):
         for good_name in good_names:
             try:
                 ServerStatusOp.validate_name(good_name)
-            except ValueError:
-                self.fail("ValueError raised.")
+            except ServerStatusNameNotValidError:
+                self.fail("ServerStatusNameNotValidError raised.")
 
     def test_validate_name_not_capital(self):
         """ Assumption:
                 - given name have no capital letter at the beginning.
         """
         name = "test"
-        with self.assertRaisesRegex(ValueError, "must start with capital"):
+        with self.assertRaisesRegex(
+            ServerStatusNameNotValidError, "must start with capital"
+        ):
             ServerStatusOp.validate_name(name)
 
     def test_validate_name_capital(self):
@@ -98,8 +104,8 @@ class TestServerStatusOp(TestCase):
         name = "Test"
         try:
             ServerStatusOp.validate_name(name)
-        except ValueError:
-            self.fail("Value error raised.")
+        except ServerStatusNameNotValidError:
+            self.fail("ServerStatusNameNotValidError raised.")
 
     @mock.patch(f"{OP_PATH}.ServerStatusOp.validate_name")
     @mock.patch(f"{OP_PATH}.ServerStatusOp.validate_id")
