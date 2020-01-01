@@ -2,6 +2,8 @@ import re
 
 from app import DB
 from app.db.models.server_status import ServerStatus
+from app.db.exceptions import ServerStatusIdNotValidError
+from app.db.exceptions import ServerStatusNameNotValidError
 
 
 class ServerStatusOp:
@@ -18,7 +20,7 @@ class ServerStatusOp:
                 id(int): ServerStatus model id field
         """
         if not isinstance(id, int):
-            raise ValueError("Field: id must be Integer.")
+            raise ServerStatusIdNotValidError("Field: id must be Integer.")
 
     @classmethod
     def validate_name(cls, name):
@@ -33,18 +35,22 @@ class ServerStatusOp:
                 name(str): ServerStatus model name field
         """
         if not isinstance(name, str):
-            raise ValueError("Field: name must be String.")
+            raise ServerStatusNameNotValidError("Field: name must be String.")
 
         if len(name) < 1 or len(name) > 20:
-            raise ValueError(
+            raise ServerStatusNameNotValidError(
                 "Field: name have wrong length. Should be in range 1 - 20."
             )
 
         if not re.match(r"[A-Za-z_]+\Z", name):
-            raise ValueError("Field: name does not match regex: [A-Za-z_]+")
+            raise ServerStatusNameNotValidError(
+                "Field: name does not match regex: [A-Za-z_]+"
+            )
 
         if not name[0].isupper():
-            raise ValueError("Field: name must start with capital letter.")
+            raise ServerStatusNameNotValidError(
+                "Field: name must start with capital letter."
+            )
 
     @classmethod
     def get(cls, id=None, name=None):

@@ -5,6 +5,8 @@ from unittest import TestCase
 from unittest import mock
 
 from app.db.operations.basic.tag import TagOp
+from app.db.exceptions import TagIdNotValidError
+from app.db.exceptions import TagNameNotValidError
 
 
 OP_PATH = "app.db.operations"
@@ -20,15 +22,15 @@ class TestOpTag(TestCase):
         positive_id = 1
         try:
             TagOp.validate_id(positive_id)
-        except ValueError:
-            self.fail("ValueError raised.")
+        except TagIdNotValidError:
+            self.fail("TagIdNotValidError raised.")
 
     def test_validate_id_negative(self):
         """ Assumptions:
                 - given id is not Integer (String instead)
         """
         negative_id = "1"
-        with self.assertRaisesRegex(ValueError, "must be Integer"):
+        with self.assertRaisesRegex(TagIdNotValidError, "must be Integer"):
             TagOp.validate_id(negative_id)
 
     def test_validate_name_too_short(self):
@@ -37,7 +39,7 @@ class TestOpTag(TestCase):
         """
         short_name = ""
 
-        with self.assertRaisesRegex(ValueError, "wrong length"):
+        with self.assertRaisesRegex(TagNameNotValidError, "wrong length"):
             TagOp.validate_name(short_name)
 
     def test_validate_name_too_long(self):
@@ -46,7 +48,7 @@ class TestOpTag(TestCase):
         """
         long_name = "T" * 16
 
-        with self.assertRaisesRegex(ValueError, "wrong length"):
+        with self.assertRaisesRegex(TagNameNotValidError, "wrong length"):
             TagOp.validate_name(long_name)
 
     def test_validate_name_wrong_type(self):
@@ -55,7 +57,7 @@ class TestOpTag(TestCase):
         """
         wrong_type_name = 123
 
-        with self.assertRaisesRegex(ValueError, "must be String"):
+        with self.assertRaisesRegex(TagNameNotValidError, "must be String"):
             TagOp.validate_name(wrong_type_name)
 
     def test_validate_name_wrong_characters(self):
@@ -67,7 +69,7 @@ class TestOpTag(TestCase):
             char for char in list(string.printable) if not re.match(name_regex, char)
         ]
         for wrong_char in wrong_chars:
-            with self.assertRaisesRegex(ValueError, "does not match regex"):
+            with self.assertRaisesRegex(TagNameNotValidError, "does not match regex"):
                 TagOp.validate_name(wrong_char)
 
     def test_validate_name_positive(self):
@@ -77,8 +79,8 @@ class TestOpTag(TestCase):
         good_name = "Good Name"
         try:
             TagOp.validate_name(good_name)
-        except ValueError:
-            self.fail("ValueError raised.")
+        except TagNameNotValidError:
+            self.fail("TagNameNotValidError raised.")
 
     @mock.patch(f"{OP_PATH}.basic.tag.TagOp.validate_name")
     @mock.patch(f"{OP_PATH}.basic.tag.TagOp.validate_id")

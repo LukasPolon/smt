@@ -2,6 +2,8 @@ import re
 
 from app import DB
 from app.db.models.tag import Tag
+from app.db.exceptions import TagIdNotValidError
+from app.db.exceptions import TagNameNotValidError
 
 
 class TagOp:
@@ -18,7 +20,7 @@ class TagOp:
                 id(int): Admin model id field
         """
         if not isinstance(id, int):
-            raise ValueError("Field: id must be Integer.")
+            raise TagIdNotValidError("Field: id must be Integer.")
 
     @classmethod
     def validate_name(cls, name):
@@ -32,15 +34,17 @@ class TagOp:
                 name(str): Admin model name field
         """
         if not isinstance(name, str):
-            raise ValueError("Field: name must be String.")
+            raise TagNameNotValidError("Field: name must be String.")
 
         if len(name) < 1 or len(name) > 15:
-            raise ValueError(
+            raise TagNameNotValidError(
                 "Field: name have wrong length. Should be in range 1 - 15."
             )
 
         if not re.match(r"[A-Za-z0-9_ ]+\Z", name):
-            raise ValueError("Field: name does not match regex: [A-Za-z0-9_ ]+")
+            raise TagNameNotValidError(
+                "Field: name does not match regex: [A-Za-z0-9_ ]+"
+            )
 
     @classmethod
     def get(cls, id=None, name=None):

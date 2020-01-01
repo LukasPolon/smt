@@ -25,7 +25,7 @@ script:
 after_success:
   - pip install coveralls
   - docker cp smt:/smt/ ./smt/
-  - (cd smt && ls -al)
+  - pip install $(cat requirements.txt | grep coverage)
   - (cd smt && coverage combine)
   - (cd smt && coverage report)
   - (cd smt && coveralls)

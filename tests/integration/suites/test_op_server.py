@@ -13,6 +13,12 @@ from app.db.operations.basic.server import ServerOp
 from app.db.operations.basic.server_type import ServerTypeOp
 from app.db.operations.basic.server_status import ServerStatusOp
 
+from app.db.exceptions import ServerStatusNotFoundError
+from app.db.exceptions import ServerTypeNotFoundError
+from app.db.exceptions import ServerIpNotFoundError
+from app.db.exceptions import ServerTagNotFoundError
+from app.db.exceptions import ServerAdminNotFoundError
+
 
 @mark.db_operations
 @mark.op_server
@@ -35,8 +41,8 @@ class TestServerOp(Asserts):
         """ Try to resolve ServerStatus row which name does not exist."""
         exception_raised = False
         try:
-            ServerOp.resolve_status("Test status")
-        except ValueError:
+            ServerOp.resolve_status("TestStatus")
+        except ServerStatusNotFoundError:
             exception_raised = True
 
         self.assertTrue(exception_raised)
@@ -56,7 +62,7 @@ class TestServerOp(Asserts):
         exception_raised = False
         try:
             ServerOp.resolve_type("Test type")
-        except ValueError:
+        except ServerTypeNotFoundError:
             exception_raised = True
 
         self.assertTrue(exception_raised)
@@ -78,7 +84,7 @@ class TestServerOp(Asserts):
         exception_raised = False
         try:
             ServerOp.resolve_ip("11.11.11.11")
-        except ValueError:
+        except ServerIpNotFoundError:
             exception_raised = True
 
         self.assertTrue(exception_raised)
@@ -96,8 +102,8 @@ class TestServerOp(Asserts):
         """ Try to resolve non-existing tag name."""
         exception_raised = False
         try:
-            ServerOp.resolve_tag("not-existing tag")
-        except ValueError:
+            ServerOp.resolve_tag("not exist tag")
+        except ServerTagNotFoundError:
             exception_raised = True
 
         self.assertTrue(exception_raised)
@@ -116,7 +122,7 @@ class TestServerOp(Asserts):
         exception_raised = False
         try:
             ServerOp.resolve_admin("Adm")
-        except ValueError:
+        except ServerAdminNotFoundError:
             exception_raised = True
 
         self.assertTrue(exception_raised)

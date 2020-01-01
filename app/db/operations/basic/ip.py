@@ -2,6 +2,8 @@ import re
 
 from app import DB
 from app.db.models.ip import Ip
+from app.db.exceptions import IpIdNotValidError
+from app.db.exceptions import IpAddressNotValidError
 
 
 class IpOp:
@@ -18,7 +20,7 @@ class IpOp:
                 id(int): Ip model id field
         """
         if not isinstance(id, int):
-            raise ValueError("Field: id must be Integer.")
+            raise IpIdNotValidError("Field: id must be Integer.")
 
     @classmethod
     def validate_address(cls, address):
@@ -32,10 +34,10 @@ class IpOp:
                 address(str): Admin model name field
         """
         if not isinstance(address, str):
-            raise ValueError("Field: address must be String.")
+            raise IpAddressNotValidError("Field: address must be String.")
 
         if not re.match(r"\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}\Z", address):
-            raise ValueError(
+            raise IpAddressNotValidError(
                 "Field: name does not match regex: " "\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}"
             )
 

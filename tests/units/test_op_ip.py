@@ -2,6 +2,9 @@ from unittest import TestCase
 from unittest import mock
 
 from app.db.operations.basic.ip import IpOp
+from app.db.exceptions import IpIdNotValidError
+from app.db.exceptions import IpAddressNotValidError
+from app.db.exceptions import IpError
 
 
 OP_PATH = "app.db.operations"
@@ -17,15 +20,15 @@ class TestOpIp(TestCase):
         positive_id = 1
         try:
             IpOp.validate_id(positive_id)
-        except ValueError:
-            self.fail("ValueError raised.")
+        except IpError:
+            self.fail("Database operations error raised.")
 
     def test_validate_id_negative(self):
         """ Assumptions:
                 - given id is not Integer (String instead)
         """
         negative_id = "1"
-        with self.assertRaisesRegex(ValueError, "must be Integer"):
+        with self.assertRaisesRegex(IpIdNotValidError, "must be Integer"):
             IpOp.validate_id(negative_id)
 
     def test_validate_address_not_string(self):
@@ -33,7 +36,7 @@ class TestOpIp(TestCase):
                 - given address is not a string
         """
         address = 1111
-        with self.assertRaisesRegex(ValueError, "must be String"):
+        with self.assertRaisesRegex(IpAddressNotValidError, "must be String"):
             IpOp.validate_address(address)
 
     def test_validate_address_regex_not_match(self):
@@ -51,7 +54,7 @@ class TestOpIp(TestCase):
             "0.0.0..",
         ]
         for wrong_address in wrong_addresses:
-            with self.assertRaisesRegex(ValueError, "does not match regex"):
+            with self.assertRaisesRegex(IpAddressNotValidError, "does not match regex"):
                 IpOp.validate_address(wrong_address)
 
     def test_validate_address_regex_match(self):
@@ -62,8 +65,8 @@ class TestOpIp(TestCase):
         for good_address in good_addresses:
             try:
                 IpOp.validate_address(good_address)
-            except ValueError:
-                self.fail("ValueError raised.")
+            except IpAddressNotValidError:
+                self.fail("IpAddressNotValidError raised.")
 
     @mock.patch(f"{OP_PATH}.basic.ip.IpOp.validate_address")
     @mock.patch(f"{OP_PATH}.basic.ip.IpOp.validate_id")

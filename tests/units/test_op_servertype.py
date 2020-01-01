@@ -2,6 +2,9 @@ from unittest import TestCase
 from unittest import mock
 
 from app.db.operations.basic.server_type import ServerTypeOp
+from app.db.exceptions import ServerTypeIdNotValidError
+from app.db.exceptions import ServerTypeNameNotValidError
+
 
 OP_PATH = "app.db.operations.basic.server_type"
 
@@ -16,15 +19,15 @@ class TestServerTypeOp(TestCase):
         positive_id = 1
         try:
             ServerTypeOp.validate_id(positive_id)
-        except ValueError:
-            self.fail("ValueError raised.")
+        except ServerTypeIdNotValidError:
+            self.fail("ServerTypeIdNotValidError raised.")
 
     def test_validate_id_negative(self):
         """ Assumptions:
                 - given id is not Integer (String instead)
         """
         negative_id = "1"
-        with self.assertRaisesRegex(ValueError, "must be Integer"):
+        with self.assertRaisesRegex(ServerTypeIdNotValidError, "must be Integer"):
             ServerTypeOp.validate_id(negative_id)
 
     def test_validate_name_not_string(self):
@@ -32,7 +35,7 @@ class TestServerTypeOp(TestCase):
                 - given name is not a string
         """
         name = 1111
-        with self.assertRaisesRegex(ValueError, "must be String"):
+        with self.assertRaisesRegex(ServerTypeNameNotValidError, "must be String"):
             ServerTypeOp.validate_name(name)
 
     def test_validate_name_too_short(self):
@@ -40,7 +43,7 @@ class TestServerTypeOp(TestCase):
                 - given name have 0 length
         """
         name = ""
-        with self.assertRaisesRegex(ValueError, "have wrong length"):
+        with self.assertRaisesRegex(ServerTypeNameNotValidError, "have wrong length"):
             ServerTypeOp.validate_name(name)
 
     def test_validate_name_too_long(self):
@@ -48,7 +51,7 @@ class TestServerTypeOp(TestCase):
                 - given name have length == 21
         """
         name = "A" * 21
-        with self.assertRaisesRegex(ValueError, "have wrong length"):
+        with self.assertRaisesRegex(ServerTypeNameNotValidError, "have wrong length"):
             ServerTypeOp.validate_name(name)
 
     def test_validate_name_good_length(self):
@@ -59,8 +62,8 @@ class TestServerTypeOp(TestCase):
         for name in names:
             try:
                 ServerTypeOp.validate_name(name)
-            except ValueError:
-                self.fail("ValueError raised.")
+            except ServerTypeNameNotValidError:
+                self.fail("ServerTypeNameNotValidError raised.")
 
     def test_validate_name_incorrect_regex(self):
         """ Assumptions:
@@ -68,7 +71,9 @@ class TestServerTypeOp(TestCase):
         """
         wrong_names = ["A1", "Aa+", "A-", "A!@#$%^&_"]
         for wrong_name in wrong_names:
-            with self.assertRaisesRegex(ValueError, "does not match regex"):
+            with self.assertRaisesRegex(
+                ServerTypeNameNotValidError, "does not match regex"
+            ):
                 ServerTypeOp.validate_name(wrong_name)
 
     def test_validate_name_correct_regex(self):
@@ -79,15 +84,17 @@ class TestServerTypeOp(TestCase):
         for good_name in good_names:
             try:
                 ServerTypeOp.validate_name(good_name)
-            except ValueError:
-                self.fail("ValueError raised.")
+            except ServerTypeNameNotValidError:
+                self.fail("ServerTypeNameNotValidError raised.")
 
     def test_validate_name_not_capital(self):
         """ Assumption:
                 - given name have no capital letter at the beginning.
         """
         name = "test"
-        with self.assertRaisesRegex(ValueError, "must start with capital"):
+        with self.assertRaisesRegex(
+            ServerTypeNameNotValidError, "must start with capital"
+        ):
             ServerTypeOp.validate_name(name)
 
     def test_validate_name_capital(self):
@@ -97,8 +104,8 @@ class TestServerTypeOp(TestCase):
         name = "Test"
         try:
             ServerTypeOp.validate_name(name)
-        except ValueError:
-            self.fail("Value error raised.")
+        except ServerTypeNameNotValidError:
+            self.fail("ServerTypeNameNotValidError raised.")
 
     @mock.patch(f"{OP_PATH}.ServerTypeOp.validate_name")
     @mock.patch(f"{OP_PATH}.ServerTypeOp.validate_id")

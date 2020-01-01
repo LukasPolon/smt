@@ -2,6 +2,8 @@ import re
 
 from app import DB
 from app.db.models.admin import Admin
+from app.db.exceptions import AdminIdNotValidError
+from app.db.exceptions import AdminNameNotValidError
 
 
 class AdminOp:
@@ -18,7 +20,7 @@ class AdminOp:
                 id(int): Admin model id field
         """
         if not isinstance(id, int):
-            raise ValueError("Field: id must be Integer.")
+            raise AdminIdNotValidError("Field: id must be Integer.")
 
     @classmethod
     def validate_name(cls, name):
@@ -32,15 +34,17 @@ class AdminOp:
                 name(str): Admin model name field
         """
         if not isinstance(name, str):
-            raise ValueError("Field: name must be String.")
+            raise AdminNameNotValidError("Field: name must be String.")
 
         if len(name) < 1 or len(name) > 20:
-            raise ValueError(
+            raise AdminNameNotValidError(
                 "Field: name have wrong length. Should be in range 1 - 20."
             )
 
         if not re.match(r"[A-Za-z0-9 ]+\Z", name):
-            raise ValueError("Field: name does not match regex: [A-Za-z0-9 ]+")
+            raise AdminNameNotValidError(
+                "Field: name does not match regex: [A-Za-z0-9 ]+"
+            )
 
     @classmethod
     def get(cls, id=None, name=None):

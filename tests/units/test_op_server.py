@@ -6,6 +6,15 @@ from unittest import mock
 
 from app.db.operations.basic.server import ServerOp
 
+from app.db.exceptions import ServerIdNotValidError
+from app.db.exceptions import ServerNameNotValidError
+from app.db.exceptions import ServerDescriptionNotValidError
+from app.db.exceptions import ServerStatusNotFoundError
+from app.db.exceptions import ServerTypeNotFoundError
+from app.db.exceptions import ServerIpNotFoundError
+from app.db.exceptions import ServerTagNotFoundError
+from app.db.exceptions import ServerAdminNotFoundError
+
 
 OP_PATH = "app.db.operations.basic.server"
 
@@ -20,15 +29,15 @@ class TestServerOp(TestCase):
         positive_id = 1
         try:
             ServerOp.validate_id(positive_id)
-        except ValueError:
-            self.fail("ValueError raised.")
+        except ServerIdNotValidError:
+            self.fail("ServerIdNotValidError raised.")
 
     def test_validate_id_negative(self):
         """ Assumptions:
                 - given id is not Integer (String instead)
         """
         negative_id = "1"
-        with self.assertRaisesRegex(ValueError, "must be Integer"):
+        with self.assertRaisesRegex(ServerIdNotValidError, "must be Integer"):
             ServerOp.validate_id(negative_id)
 
     def test_validate_name_positive(self):
@@ -39,15 +48,15 @@ class TestServerOp(TestCase):
         name = "aA09_"
         try:
             ServerOp.validate_name(name)
-        except ValueError:
-            self.fail("ValueError raised.")
+        except ServerNameNotValidError:
+            self.fail("ServerNameNotValidError raised.")
 
     def test_validate_name_not_string(self):
         """ Assumptions:
                 - given name is not string (int instead)
         """
         name = 111
-        with self.assertRaisesRegex(ValueError, "must be String"):
+        with self.assertRaisesRegex(ServerNameNotValidError, "must be String"):
             ServerOp.validate_name(name)
 
     def test_validate_name_too_short(self):
@@ -55,7 +64,7 @@ class TestServerOp(TestCase):
                 - given name have 0 length
         """
         name = ""
-        with self.assertRaisesRegex(ValueError, "wrong length"):
+        with self.assertRaisesRegex(ServerNameNotValidError, "wrong length"):
             ServerOp.validate_name(name)
 
     def test_validate_name_too_long(self):
@@ -63,7 +72,7 @@ class TestServerOp(TestCase):
                 - given name have 31 length
         """
         name = "a" * 31
-        with self.assertRaisesRegex(ValueError, "wrong length"):
+        with self.assertRaisesRegex(ServerNameNotValidError, "wrong length"):
             ServerOp.validate_name(name)
 
     def test_validate_name_wrong_characters(self):
@@ -75,7 +84,9 @@ class TestServerOp(TestCase):
             char for char in list(string.printable) if not re.match(name_regex, char)
         ]
         for wrong_char in wrong_chars:
-            with self.assertRaisesRegex(ValueError, "does not match regex"):
+            with self.assertRaisesRegex(
+                ServerNameNotValidError, "does not match regex"
+            ):
                 ServerOp.validate_name(wrong_char)
 
     def test_validate_description_positive(self):
@@ -86,15 +97,15 @@ class TestServerOp(TestCase):
         desc = "aA09_"
         try:
             ServerOp.validate_description(desc)
-        except ValueError:
-            self.fail("ValueError raised.")
+        except ServerDescriptionNotValidError:
+            self.fail("ServerDescriptionNotValidError raised.")
 
     def test_validate_description_not_string(self):
         """ Assumptions:
                 - given description is not string (int instead)
         """
         desc = 111
-        with self.assertRaisesRegex(ValueError, "must be String"):
+        with self.assertRaisesRegex(ServerDescriptionNotValidError, "must be String"):
             ServerOp.validate_description(desc)
 
     def test_validate_description_too_short(self):
@@ -102,7 +113,7 @@ class TestServerOp(TestCase):
                 - given description have 0 length
         """
         desc = ""
-        with self.assertRaisesRegex(ValueError, "wrong length"):
+        with self.assertRaisesRegex(ServerDescriptionNotValidError, "wrong length"):
             ServerOp.validate_description(desc)
 
     def test_validate_description_too_long(self):
@@ -110,7 +121,7 @@ class TestServerOp(TestCase):
                 - given description have 61 length
         """
         desc = "a" * 61
-        with self.assertRaisesRegex(ValueError, "wrong length"):
+        with self.assertRaisesRegex(ServerDescriptionNotValidError, "wrong length"):
             ServerOp.validate_description(desc)
 
     def test_validate_description_wrong_characters(self):
@@ -122,7 +133,9 @@ class TestServerOp(TestCase):
             char for char in list(string.printable) if not re.match(name_regex, char)
         ]
         for wrong_char in wrong_chars:
-            with self.assertRaisesRegex(ValueError, "does not match regex"):
+            with self.assertRaisesRegex(
+                ServerDescriptionNotValidError, "does not match regex"
+            ):
                 ServerOp.validate_description(wrong_char)
 
     @mock.patch(f"{OP_PATH}.ServerStatusOp")
@@ -148,7 +161,7 @@ class TestServerOp(TestCase):
         """
         mock_status_op.get.return_value = list()
 
-        with self.assertRaisesRegex(ValueError, "Not found"):
+        with self.assertRaisesRegex(ServerStatusNotFoundError, "Not found"):
             ServerOp.resolve_status("status_name")
 
         mock_status_get_calls = [mock.call(name="status_name")]
@@ -177,7 +190,7 @@ class TestServerOp(TestCase):
         """
         mock_type_op.get.return_value = list()
 
-        with self.assertRaisesRegex(ValueError, "Not found"):
+        with self.assertRaisesRegex(ServerTypeNotFoundError, "Not found"):
             ServerOp.resolve_type("TypeName")
 
         mock_status_get_calls = [mock.call(name="TypeName")]
@@ -204,7 +217,7 @@ class TestServerOp(TestCase):
         """
         mock_ip_op.get.return_value = list()
 
-        with self.assertRaisesRegex(ValueError, "Not found"):
+        with self.assertRaisesRegex(ServerIpNotFoundError, "Not found"):
             ServerOp.resolve_ip("11.11.11.11")
 
         mock_ip_get_calls = [mock.call(address="11.11.11.11")]
@@ -231,7 +244,7 @@ class TestServerOp(TestCase):
         """
         mock_tag_op.get.return_value = list()
 
-        with self.assertRaisesRegex(ValueError, "Not found"):
+        with self.assertRaisesRegex(ServerTagNotFoundError, "Not found"):
             ServerOp.resolve_tag("tag")
 
         mock_tag_get_calls = [mock.call(name="tag")]
@@ -258,7 +271,7 @@ class TestServerOp(TestCase):
         """
         mock_admin_op.get.return_value = list()
 
-        with self.assertRaisesRegex(ValueError, "Not found"):
+        with self.assertRaisesRegex(ServerAdminNotFoundError, "Not found"):
             ServerOp.resolve_admin("admin")
 
         mock_adm_get_calls = [mock.call(name="admin")]

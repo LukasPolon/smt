@@ -2,6 +2,9 @@ from unittest import TestCase
 from unittest import mock
 
 from app.db.operations.basic.admin import AdminOp
+from app.db.exceptions import AdminIdNotValidError
+from app.db.exceptions import AdminNameNotValidError
+from app.db.exceptions import DbError
 
 
 OP_PATH = "app.db.operations"
@@ -17,15 +20,15 @@ class TestOpAdmin(TestCase):
         positive_id = 1
         try:
             AdminOp.validate_id(positive_id)
-        except ValueError:
-            self.fail("ValueError raised.")
+        except DbError:
+            self.fail("Database error raised.")
 
     def test_validate_id_negative(self):
         """ Assumptions:
                 - given id is not Integer (String instead)
         """
         negative_id = "1"
-        with self.assertRaisesRegex(ValueError, "must be Integer"):
+        with self.assertRaisesRegex(AdminIdNotValidError, "must be Integer"):
             AdminOp.validate_id(negative_id)
 
     def test_validate_name_too_short(self):
@@ -34,7 +37,7 @@ class TestOpAdmin(TestCase):
         """
         short_name = ""
 
-        with self.assertRaisesRegex(ValueError, "wrong length"):
+        with self.assertRaisesRegex(AdminNameNotValidError, "wrong length"):
             AdminOp.validate_name(short_name)
 
     def test_validate_name_too_long(self):
@@ -43,7 +46,7 @@ class TestOpAdmin(TestCase):
         """
         long_name = "T" * 21
 
-        with self.assertRaisesRegex(ValueError, "wrong length"):
+        with self.assertRaisesRegex(AdminNameNotValidError, "wrong length"):
             AdminOp.validate_name(long_name)
 
     def test_validate_name_wrong_type(self):
@@ -52,7 +55,7 @@ class TestOpAdmin(TestCase):
         """
         wrong_type_name = 123
 
-        with self.assertRaisesRegex(ValueError, "must be String"):
+        with self.assertRaisesRegex(AdminNameNotValidError, "must be String"):
             AdminOp.validate_name(wrong_type_name)
 
     def test_validate_name_wrong_characters(self):
@@ -62,7 +65,7 @@ class TestOpAdmin(TestCase):
         wrong_chars_names = ["(", ")", "_", "-", "*", "$"]
 
         for char in wrong_chars_names:
-            with self.assertRaisesRegex(ValueError, "does not match regex"):
+            with self.assertRaisesRegex(AdminNameNotValidError, "does not match regex"):
                 AdminOp.validate_name(char)
 
     def test_validate_name_positive(self):
@@ -72,8 +75,8 @@ class TestOpAdmin(TestCase):
         good_name = "Good Name"
         try:
             AdminOp.validate_name(good_name)
-        except ValueError:
-            self.fail("ValueError raised.")
+        except DbError:
+            self.fail("Database error raised.")
 
     @mock.patch(f"{OP_PATH}.basic.admin.AdminOp.validate_name")
     @mock.patch(f"{OP_PATH}.basic.admin.AdminOp.validate_id")
